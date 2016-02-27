@@ -25,12 +25,6 @@ public class ElevationRequest extends HttpServlet  {
 	private static final String API_KEY 			= "AIzaSyDVyQlW4jGu8DKHMBRzKdXS1xSyhlk2jr4";
 	private static final String ELEVATION_BASE_URL 	= "https://maps.googleapis.com/maps/api/elevation/json";
 	
-	
-	public void init() throws ServletException
-	{
-	   // Do required initialization
-	  
-	}
 
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -72,8 +66,4 @@ public class ElevationRequest extends HttpServlet  {
 	  MetricsService.getInstance().start(journeyName);
 	}
 
-	public void destroy()
-	{
-	   // do nothing.
-	}
 }

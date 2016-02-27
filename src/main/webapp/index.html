@@ -1245,7 +1245,6 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
  	             x = tilesPerGlobe+x;
  	         }
  	         // Wrap y (latitude) in a like manner if you want to enable vertical infinite scroll
-
  	         return "http://tile.openstreetmap.org/" + zoom + "/" + x + "/" + coord.y + ".png";
  	     },
  	     tileSize: new google.maps.Size(256, 256),
@@ -1263,7 +1262,6 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
 	             x = tilesPerGlobe+x;
 	         }
 	         // Wrap y (latitude) in a like manner if you want to enable vertical infinite scroll
-			// return "http://tah.openstreetmap.org/Tiles/tile/" + zoom + "/" + x + "/" + coord.y + ".png";
 	         return "http://otile1.mqcdn.com/tiles/1.0.0/map/" + zoom + "/" + x + "/" + coord.y + ".png";
 	         
 	     },

@@ -1,6 +1,14 @@
 package com.cprasmu.picycle.resteasy;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -10,9 +18,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
+import org.codehaus.jackson.map.ObjectMapper;
+
 import com.cprasmu.picycle.MetricsService;
 import com.cprasmu.picycle.model.BikeJourney;
 import com.cprasmu.picycle.model.ConsumeDeltaResponse;
+import com.cprasmu.picycle.model.ElevationPoint;
 
 
 @Path("/api")
@@ -68,9 +79,6 @@ public class ApiService {
 	}
 	
 	
-	//ElevationRequest
-
-	
 	@GET
 	@Path("/consumeDelta/{lat}/{lng}")
 	@Produces("application/json")
@@ -116,6 +124,40 @@ public class ApiService {
 	    return "Load set to : " + altitude;    
 	}
 	
+	@GET
+	@Path("/elevation/{journeyName}/{samples}/{path}")
+	@Produces("application/json")
+	public List<ElevationPoint> elevation(@PathParam("journeyName") String journeyName, @PathParam("samples") int samples,@PathParam("path") String path) throws IOException{
+		
+		String API_KEY 				= "AIzaSyDVyQlW4jGu8DKHMBRzKdXS1xSyhlk2jr4";
+		String ELEVATION_BASE_URL 	= "https://maps.googleapis.com/maps/api/elevation/json";
+		
+		URL elevationURL = new URL(ELEVATION_BASE_URL + "?path=" + path + "&samples=" + samples);
+		URLConnection yc = elevationURL.openConnection();
+		BufferedReader in = new BufferedReader( new InputStreamReader( yc.getInputStream()));
+		
+		String inputLine;
+		StringBuffer data=  new StringBuffer();
+		  
+		while ((inputLine = in.readLine()) != null) {
+			data.append(inputLine);
+		}
+		  
+		ObjectMapper objectMapper = new ObjectMapper();
+		  
+		LinkedHashMap<String,Object> results = objectMapper.readValue(data.toString(), LinkedHashMap.class);
+		
+		List<ElevationPoint> evelvationProfile = (List<ElevationPoint>) results.get("results");
+		  		
+		MetricsService.getInstance().getCurrentBikeJourney().setEvelvationProfile(evelvationProfile);
+
+		in.close();
+		 
+		MetricsService.getInstance().reset();
+		MetricsService.getInstance().start(journeyName);
+		
+		return evelvationProfile;
+	}
 	
 	
 }

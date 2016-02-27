@@ -72,10 +72,19 @@ public class BikeJourney {
 		
 		StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" ?>\r\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\">\r\n<trk>\r\n");
 		sb.append("<name>" + getName() + "</name>\r\n");
+		sb.append("<desc>PiCycle Virtual Journey</desc>\r\n");
+		sb.append("<time>"+fmt.format(new Date())+"</time>\r\n");
 		sb.append("<trkseg>\r\n");
 		
-		for (JourneyPoint jp:data){
+		//for (JourneyPoint jp:data) {
+		for (int idx=0; idx<data.size(); idx++) {
+			JourneyPoint jp = data.get(idx);
+			
 			sb.append("<trkpt lat=\"" + jp.getGeoPoint().getLat() + "\" lon=\"" + jp.getGeoPoint().getLng() +"\">");
+			if (idx==0) {
+				sb.append("<name>Start</name>");
+			}
+			sb.append("<desc>Cadence: "+ jp.getCadence() +"  Speed:" + jp.getSpeed() + " Altitude: "+ jp.getAltitude() + "</ele>" );
 			sb.append("<ele>"+jp.getAltitude() +"</ele>");
 			sb.append("<time>"+ fmt.format(new Date(jp.getTime()))+"</time>");
 			sb.append("</trkpt>\r\n");

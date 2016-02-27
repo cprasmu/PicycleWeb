@@ -84,7 +84,7 @@ public class BikeJourney {
 			if (idx==0) {
 				sb.append("<name>Start</name>");
 			}
-			sb.append("<desc>Cadence: "+ jp.getCadence() +"  Speed:" + jp.getSpeed() + " Altitude: "+ jp.getAltitude() + "</ele>" );
+			sb.append("<desc>Cadence: "+ jp.getCadence() +"  Speed:" + jp.getSpeed() + " Altitude: "+ jp.getAltitude() + "</desc>" );
 			sb.append("<ele>"+jp.getAltitude() +"</ele>");
 			sb.append("<time>"+ fmt.format(new Date(jp.getTime()))+"</time>");
 			sb.append("</trkpt>\r\n");

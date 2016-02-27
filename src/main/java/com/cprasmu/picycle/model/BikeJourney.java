@@ -1,6 +1,8 @@
 package com.cprasmu.picycle.model;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -64,6 +66,25 @@ public class BikeJourney {
 	}
 	
 	
-	
+	public String toGPX() {
+		
+		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+		
+		StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" ?>\r\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\">\r\n<trk>\r\n");
+		sb.append("<name>" + getName() + "</name>\r\n");
+		sb.append("<trkseg>\r\n");
+		
+		for (JourneyPoint jp:data){
+			sb.append("<trkpt lat=\"" + jp.getGeoPoint().getLat() + "\" lon=\"" + jp.getGeoPoint().getLng() +"\">");
+			sb.append("<ele>"+jp.getAltitude() +"</ele>");
+			sb.append("<time>"+ fmt.format(new Date(jp.getTime()))+"</time>");
+			sb.append("</trkpt>\r\n");
+		}
+		
+		sb.append("</trkseg>\r\n</trk>\r\n</gpx>");
+		
+		return sb.toString();
+		
+	}
 
 }

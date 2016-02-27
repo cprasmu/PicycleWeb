@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
-  <display-name>PicycleWeb</display-name>
-  
+  <display-name>PiCycle Virtual Journeys</display-name>
   
    <listener>
         <listener-class>
@@ -16,7 +15,7 @@
 
     <servlet-mapping>
         <servlet-name>Resteasy</servlet-name>
-        <url-pattern>/restful-services/*</url-pattern>
+        <url-pattern>/services/*</url-pattern>
     </servlet-mapping>
     
     <!--context-param>
@@ -32,17 +31,17 @@
     
     <context-param>
         <param-name>resteasy.servlet.mapping.prefix</param-name>
-        <param-value>/restful-services</param-value>
+        <param-value>/services</param-value>
     </context-param>
     
     
-    <servlet>
+    <!--servlet>
         <servlet-name>DeltaDistanceServlet</servlet-name>
         <servlet-class>com.cprasmu.picycle.DeltaDistanceServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>DeltaDistanceServlet</servlet-name>
-        <url-pattern>/api/deltaDistance</url-pattern>
+        <url-pattern>/api2/deltaDistance</url-pattern>
     </servlet-mapping>
     
       <servlet>
@@ -52,8 +51,8 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>PulseServlet</servlet-name>
-        <url-pattern>/api/pulse</url-pattern>
-    </servlet-mapping>
+        <url-pattern>/api2/pulse</url-pattern>
+    </servlet-mapping-->
     
      <servlet>
         <servlet-name>ElevationRequest</servlet-name>
@@ -61,16 +60,16 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>ElevationRequest</servlet-name>
-        <url-pattern>/api/Elevation</url-pattern>
+        <url-pattern>/api2/Elevation</url-pattern>
     </servlet-mapping>
     
-    <servlet>
+    <!--servlet>
         <servlet-name>PWMLoad</servlet-name>
         <servlet-class>com.cprasmu.picycle.PWMLoad</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>PWMLoad</servlet-name>
-        <url-pattern>/api/pwm</url-pattern>
+        <url-pattern>/api2/pwm</url-pattern>
     </servlet-mapping>
     
     <servlet>
@@ -79,23 +78,15 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>BikeLoad</servlet-name>
-        <url-pattern>/api/bike</url-pattern>
-    </servlet-mapping>
+        <url-pattern>/api2/bike</url-pattern>
+    </servlet-mapping-->
     
     
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
-    <welcome-file>index.htm</welcome-file>
-    <welcome-file>index.jsp</welcome-file>
-    <welcome-file>default.html</welcome-file>
-    <welcome-file>default.htm</welcome-file>
-    <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
   
-
   <!--listener>
         <listener-class>MetricsService</listener-class>
   </listener-->
 </web-app>
-
-

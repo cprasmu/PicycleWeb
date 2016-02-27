@@ -10,10 +10,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import com.cprasmu.picycle.io.PWMDevice;
-import com.cprasmu.picycle.model.BikeJourney;
-import com.cprasmu.picycle.model.ElevationPoint;
-import com.cprasmu.picycle.model.Location;
-import com.cprasmu.picycle.model.JourneyPoint;
+import com.cprasmu.picycle.model.*;
+
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.GpioPin;
@@ -26,6 +24,7 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import com.pi4j.io.gpio.trigger.GpioCallbackTrigger;
 import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CDevice;
+import com.pi4j.wiringpi.GpioUtil;
 
 import javax.servlet.annotation.WebListener;
 
@@ -36,8 +35,9 @@ public class MetricsService  {
 	private Float totalDistance = new Float(0);
 	private Float wheelDiameter = 2.08f;
 	private Float wheelCadence = new Float(0);
-	private double cadence = new Double(0);
-	private boolean tripStarted=false;
+	
+	private double cadence	 	= new Double(0);
+	private boolean tripStarted = false;
 	private long lastWheelTime=0;
 	private double altitude = 0;
 	private long pulseCount=0;
@@ -54,7 +54,8 @@ public class MetricsService  {
 	private static final int PWM_MFACTOR = 60;
 	//private float maxMagLoad = 5.0f;
 	private boolean ioinit =  false;
-	
+	private double maxSpeed=0;
+	private double aveSpeed=0;
 			
 	public static final int NOT_SET = Integer.MIN_VALUE;
 	private long lastSpin, spinDiff,thisSpin=System.currentTimeMillis();
@@ -65,31 +66,6 @@ public class MetricsService  {
     
     private ArrayList<BikeJourney>journeys = new ArrayList<>();
     BikeJourney currentJourney = new BikeJourney();
-    
-    
-    /*
-     * Data for power calculations
-     * http://polynomialregression.drque.net/online.php
-0,0
-18,100
-20,180
-25,225
-30,350
-35,500
-36,550
-37,600
-38,640
-40,740
-41,800
-43,900
-45,1000
-48,1200
-50,1350
-52,1500
-55,1750
-58,2000
-60,2200
-    */
 
 	private PWMDevice.PWMChannel servo0;
 	
@@ -107,7 +83,7 @@ public class MetricsService  {
 	}
 	
 	
-	public void setBikeLoad(float load){
+	public void setBikeLoad(double load){
 		
 		if ((load < MIN_BIKE_LOAD) || (load > MAX_BIKE_LOAD)){
 			return;
@@ -144,7 +120,7 @@ public class MetricsService  {
 		lastWheelTime = System.currentTimeMillis();
 		
 		tripStarted = false;
-		
+		maxSpeed=0;
 	}
 	
 	public void setAltitude(double altitude){
@@ -238,6 +214,8 @@ public class MetricsService  {
 	
 	private MetricsService() {
 		
+		
+		GpioUtil.enableNonPrivilegedAccess();
 		System.out.println("###################### MetricsService created ######################");
 		
 		deltaDistance = new Float(0);
@@ -326,17 +304,49 @@ public class MetricsService  {
 	}
 	
 	
-	public float getSpeedMPH() {
+	public double getSpeedMPH() {
 		
 		Float total=0f;
+		double result= 0;
+		
 		if (speedList.size()==0) return 0;
 		
 		for (int i=0;i<speedList.size();i++){
 			total += speedList.get(i);
 		}
 		
+		result = total/speedList.size();
+		
+		if (result>maxSpeed){
+			maxSpeed = result;
+		}
+		
+		
+		
 		return (total/speedList.size());
 		
+	}
+	
+	public double getMaxSpeedMPH() {
+		return maxSpeed;
+	}
+	
+	public double getAveSpeedMPH() {
+		
+		if (getTripTime()>0){
+			
+			// 10,000m in 1hour = 10Km/h
+			
+			// 10000 / 36000
+		
+			aveSpeed = (totalDistance * 0.6214) / (getTripTime() / 3600);
+		
+		} else {
+			aveSpeed = 0;
+		}
+		
+		
+		return aveSpeed;
 	}
 	
 	public synchronized void crankPulse(){
@@ -375,7 +385,7 @@ public class MetricsService  {
     }
 	
 	
-	public Float consumeDelta(double lat,double lng) {
+	public Float consumeDelta1(double lat,double lng) {
 		
 		synchronized (deltaDistance) {
 			
@@ -402,6 +412,46 @@ public class MetricsService  {
 			}
 			
 		}
+	}
+	
+	
+	public ConsumeDeltaResponse consumeDelta(double lat,double lng){
+
+		ConsumeDeltaResponse response = new ConsumeDeltaResponse();
+		
+		synchronized (deltaDistance) {
+			
+			JourneyPoint jp = new JourneyPoint();
+			jp.setTime(System.currentTimeMillis());
+			jp.setDistance((double)deltaDistance);
+			jp.setSpeed(getSpeedMPH());
+			jp.setCadence(getCadence());
+			jp.setPower(calculatePower(getSpeedMPH()*1.6));
+			jp.setAltitude(altitude);
+			jp.setGeoPoint(new Location(lat,lng));
+
+			currentJourney.getData().add(jp);
+			
+			Float retval  = deltaDistance;
+			
+			
+			if (!retval.isInfinite()){
+				response.setDistance(deltaDistance);
+			} else {
+				response.setDistance(0d);
+			}
+			
+			response.setTotalDistance(getTotalDistance());
+			response.setCadence(getCadence());
+			response.setSpeed(getSpeedMPH());
+			response.setTime(getTripTime());
+			response.setMaxSpeed(getMaxSpeedMPH());
+			response.setAveSpeed(getAveSpeedMPH());
+			deltaDistance = 0f;
+		}
+		
+		
+		return response;
 	}
 	
 	public BikeJourney getCurrentBikeJourney(){
@@ -444,6 +494,8 @@ public class MetricsService  {
 		deltaDistance=0f;
 		totalDistance=0f;
 		tripStarted = false;
+		aveSpeed=0;
+		maxSpeed=0;
 	}
 	
 	public void start(String journeyName) {

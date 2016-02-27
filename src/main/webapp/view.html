@@ -1,4 +1,4 @@
-<html><head><title>PiCycle Virtual Journeys</title>
+<html><head><title>PiCycle Virtual Journeys - Viewer</title>
 <link rel="shortcut icon" href="favicon.ico">
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
@@ -9,8 +9,8 @@
 <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />
-<!--script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDVyQlW4jGu8DKHMBRzKdXS1xSyhlk2jr4&signed_in=true&libraries=places"></script-->
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?signed_in=true&libraries=places"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDVyQlW4jGu8DKHMBRzKdXS1xSyhlk2jr4&signed_in=true&libraries=places"></script>
+<!--script type="text/javascript" src="http://maps.google.com/maps/api/js?signed_in=true&libraries=places"></script-->
 <!--script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVyQlW4jGu8DKHMBRzKdXS1xSyhlk2jr4&signed_in=true&libraries=places&callback=initAutocomplete" async defer></script-->
 <script type="text/javascript">
 
@@ -18,64 +18,6 @@
 	var map	= null;
 	var pan = null;
 	
-	var placeSearch, autocompleteFrom, autocompleteTo, autocompleteVia;
-	
-	var componentForm = {
-	        street_number: 'short_name',
-	        route: 'long_name',
-	        locality: 'long_name',
-	        administrative_area_level_1: 'short_name',
-	        country: 'long_name',
-	        postal_code: 'short_name'
-	 };
-	
-	 function initAutocomplete() {
-	        // Create the autocomplete object, restricting the search to geographical
-	        // location types.
-	        autocompleteFrom = new google.maps.places.Autocomplete((document.getElementById('fromText')),  {types: ['geocode']});
-	        autocompleteTo = new google.maps.places.Autocomplete((document.getElementById('toText')),  {types: ['geocode']});
-	        autocompleteVia = new google.maps.places.Autocomplete((document.getElementById('viaText')),  {types: ['geocode']});
-	        // When the user selects an address from the dropdown, populate the address
-	        // fields in the form.
-	      //  autocomplete.addListener('place_changed', fillInAddress);
-	        //autocomplete.addListener('place_changed', fillInAddress);
-	}
-	 
-	 function fillInAddress() {
-	        // Get the place details from the autocomplete object.
-	        var place = autocomplete.getPlace();
-
-	        for (var component in componentForm) {
-	    //      document.getElementById(component).value = '';
-	   //       document.getElementById(component).disabled = false;
-	        }
-
-	        // Get each component of the address from the place details
-	        // and fill the corresponding field on the form.
-	        for (var i = 0; i < place.address_components.length; i++) {
-	          var addressType = place.address_components[i].types[0];
-	          if (componentForm[addressType]) {
-	            var val = place.address_components[i][componentForm[addressType]];
-	            document.getElementById(addressType).value = val;
-	          }
-	        }
-	}
-	 
-	 function geolocate() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function(position) {
-            var geolocation = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            };
-            var circle = new google.maps.Circle({
-              center: geolocation,
-              radius: position.coords.accuracy
-            });
-            autocomplete.setBounds(circle.getBounds());
-          });
-        }
-	}
 	 
 	function DMap() { 
 		this.streeViewZoom = 1;
@@ -107,12 +49,10 @@
  		this.cd 			= null; // used once - directions
  		//this.cP 			= null;//not found
  		this.dp 			= null;//not found
- 		this.startPanel 	= null;
  		this.mapPanel 		= null;
  		this.streetViewPanel= null;
  		this.headerPanel 	= null;
  		this.directionsPanel= null;
- 		this.waitPanel 		= null;
  		this.l 				= null;//location
  		this.as 			= null;//marker
  		this.bi 			= -1;//mode
@@ -233,41 +173,15 @@
 
  
  function loadPage() { 
-	 
- 	initGeoUtils();
- 	
- 	
+
  	dmap = new DMap();
- 	dmap.parseURLParameters();
  	dmap.initPanels();
- 	dmap.initInputForm();
  	dmap.bp();
- 	dmap.cK();
  	dmap.cE();
- 	
- 
- 	if (dmap.startLoc && dmap.endLoc && dmap.ai > 0) { 
- 		setMode(dmap.ai);
- 		dmap.af();
- 		dmap.bw();
- 	} else { 
- 		setMode(0);
- 	} 
- 	
- 	if (window.DeviceMotionEvent != undefined) {
- 		dmap.initGryo();
- 	}
- 	/*
- 	setInterval( function() {
- 		var landscapeOrientation = window.innerWidth/window.innerHeight > 1;
- 		if ( landscapeOrientation) {
- 			
- 		} else {
- 			
- 		}
- 		
- 	}, 100);
- 	*/
+	setMode(dmap.ai);
+	dmap.af();
+	dmap.bw();
+	
  };
  
  function unloadPage() { 
@@ -351,7 +265,8 @@
 		 
 		 if (dmap.F) { 
 			 
-			 callAjax("api/deltaDistance?lat="+ dmap.l.lat() + "&lng="+ dmap.l.lng(), function(response) {
+			 //callAjax("api2/deltaDistance?lat="+ dmap.l.lat() + "&lng="+ dmap.l.lng(), function(response) {
+			 callAjax("services/api/consumeDelta/"+ dmap.l.lat() + "/"+ dmap.l.lng(), function(response) {
 		 		var dK = response.distance;
 		 		document.getElementById('distDisplay').innerHTML = "Distance : " + response.totalDistance.toFixed(1);
 		 		
@@ -372,8 +287,8 @@
 		 		dmap.chart.redraw();
 		 		var altitude = dmap.elevationData[rowPos];
 		 		
-		 		
-		 		 callAjax("api/bike?load="+ (3+(curGrad[1]/8)).toFixed(1) + "&altitude=" + altitude, function(response1){
+		 		// callAjax("api2/bike?load="+ (3+(curGrad[1]/8)).toFixed(1) + "&altitude=" + altitude, function(response1){
+		 		 callAjax("services/api/bikeLoad/"+ (3+(curGrad[1]/8)).toFixed(1) + "/" + altitude, function(response1){
 		 			// console.log(response1);
 		 		 });
 		 		 
@@ -550,37 +465,7 @@
 	}
  };
  
- DMap.prototype.highlightInterval = function (id, startTime, endTime) {
 
-     if (this.chart.xAxis[0].max < endTime || this.chart.xAxis[0].min > startTime) {
-         return false;
-     }
-
-     startTime = startTime - this.chart.xAxis[0].min;
-     endTime = endTime - this.chart.xAxis[0].min;
-
-     var width = this.chart.xAxis[0].width;
-     var dataMax = this.chart.xAxis[0].max / 1000;
-     var dataMin = this.chart.xAxis[0].min / 1000;
-
-     var pixelWidth = width / (dataMax - dataMin);
-
-     var plotX1 = pixelWidth * startTime / 1000;
-     var plotX2 = pixelWidth * endTime / 1000;
-
-     var difference = this.chart.chartHeight - this.chart.plotHeight - this.chart.plotTop;
-
-     this.chart.renderer.rect(this.chart.plotLeft + (this.chart.chartWidth - this.chart.plotLeft - this.chart.plotSizeX) + plotX1, 0, plotX2 - plotX1, this.chart.chartHeight - difference, 0)
-         .attr({
-             'stroke-width': 0,
-             fill: 'yellow',
-             opacity: .2,
-             zIndex: 3,
-             id: id
-         })
-         .add();
-     return false;
- };
  
  
  DMap.prototype.buildChart2 = function(data){
@@ -1031,9 +916,6 @@
  	
  };
  
- DMap.prototype.cK = function () { 
-	 this.waitPanel.innerHTML = "<table cellspacing=0 cellpadding=8 style='width:100%;height:100%;'><tr valign='top'><td style='width:100%'>" + "<div id='waitDiv'></div>" + "</td></tr></table>";
- };
  
  DMap.prototype.setWaitDiv = function (html) { 
 	 eid("waitDiv").innerHTML = html;
@@ -1043,21 +925,19 @@
  DMap.prototype.initPanels = function () { 
 	this.calcWindowDimensions();
  	var ag = "";
- 	ag += "<div id='startPanel' style='position:absolute;display:none'></div>";
  	ag += "<div id='headerPanel' style='position:absolute;display:none'></div>";
  	ag += "<div id='directionsPanel' style='position:absolute;display:none;overflow:auto'></div>";
  	ag += "<div id='mapPanel' style='position:absolute;display:none'></div>";
  	ag += "<div id='streetViewPanel' style='position:absolute;display:none'></div>";
- 	ag += "<div id='waitPanel' style='position:absolute;display:none'></div>";
  	ag += "<div id='stockContainer' style='position:absolute;'></div>"; 
  	
  	eid("mainDiv").innerHTML = ag;
- 	this.startPanel = eid("startPanel");
+
  	this.headerPanel = eid("headerPanel");
  	this.mapPanel = eid("mapPanel");
  	this.streetViewPanel = eid("streetViewPanel");
  	this.directionsPanel = eid("directionsPanel");
- 	this.waitPanel = eid("waitPanel");
+
  	this.elePan = eid("stockContainer");//new
  	this.resizeElements();
  };
@@ -1094,52 +974,28 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
 	this.calcWindowDimensions();
 	var L = 30+150;
 	
- 	if (this.bi == 0) { 
- 		var ht = this.height;
- 		var ht1 = parseInt((this.height - L + 1) / 2);
- 		var wd = this.width;
-		this.t(this.startPanel, true, 0, 0, wd, ht);
- 		this.t(this.mapPanel, false, 0, ht1, wd, ht1);
- 		this.t(this.headerPanel, false, 0, 0, wd, L);
- 		this.t(this.streetViewPanel, false, 0, 0, wd, ht1);
- 		this.t(this.directionsPanel, false, 0, 0, 0, wd, ht1);
- 		this.t(this.waitPanel, false, 0, 0, wd, ht1);
- 		this.t(this.elePan, false, 0, 0, 0, wd, ht1);
- 		
- 	} else if (this.bi == 3) { 
- 		var ht = this.height;
- 		var ht1 = parseInt((this.height - L + 1) / 2);
- 		var wd = this.width;
- 		this.t(this.waitPanel, true, 0, 0, wd, ht);
- 		this.t(this.startPanel, false, 0, 0, wd, ht);
- 		this.t(this.mapPanel, false, 0, ht1, wd, ht1);
- 		this.t(this.headerPanel, false, 0, 0, wd, L);
- 		this.t(this.streetViewPanel, false, 0, 0, wd, ht1);
- 		this.t(this.directionsPanel, false, 0, 0, 0, wd, ht1);
- 		this.t(this.elePan, false, 0, 0, 0, wd, ht1);
- 		
- 	} else { 
+ 	
  		var ht = parseInt((this.height - 30) / 3);
  		//var ht = parseInt((this.height - L + 1) / 2);
  		var wd = this.width;
  		var y1 = L;
  		var y2 = L + ht;
  		var y3 = this.height - L;
- 		this.t(this.startPanel, false, 0, 0, wd, ht);
+
  		//this.t(this.headerPanel, true, 0, 0, wd, L-150);
  		this.t(this.headerPanel, true, 0, 0, wd,30);
  		
  		this.t(this.directionsPanel, this.bi == 1, 0, y1, wd, ht);
  		//this.t(this.streetViewPanel, this.bi == 2, 0, y1, wd, ht);
  	//	this.t(this.mapPanel, true, 0, y2, wd, ht);
- 		this.t(this.waitPanel    , false, 0, 0,  wd, ht);
+
 	//	this.tt(this.elePan, true , 0, 30, 100, ht/2);
 	
 		this.tt(this.elePan, true , 0, 30 , 100, ht);
 		this.t(this.streetViewPanel, this.bi == 2, 0, 30 + ht, wd, ht);
  		this.t(this.mapPanel, true,                0, 30 + (ht*2),  wd, ht);
  		
- 	} 
+ 	}
  	
  	if (eid("directionsDiv") && (this.width > 0)) { 
  		eid("directionsDiv").style.width = (this.width - 30) + "px";
@@ -1150,12 +1006,7 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
  	if (pan) { 
  		google.maps.event.trigger(pan, "resize");
  	} 
- 	//if (this.elevationData){
- 		//if (this.chart){
  	
- 			//this.chart.draw(google.visualization.arrayToDataTable(this.elevationData));
- 		//}
- 	//}
  };
  
  DMap.prototype.calcWindowDimensions = function () { 
@@ -1175,10 +1026,7 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
  DMap.prototype.bp = function () { 
 	 this.headerPanel.innerHTML = "<table cellspacing=0 cellpadding=2 style='width:100%;height:100%;background-color:gainsboro' ><tr><td style='width:130px'>" 
 	 + "<input id='playButton'  type='button' onclick='playAnimation()' value='Play' style='width:60px'  /> " 
-	 + "<input id='resetButton' type='button' onclick='resetDirections()' value='Reset'  style='width:60px' />" 
 	 + "</td><td align='right'><div id='distDisplay'></div></td><td align='right'><div style='width: 60px;height: 25px' id='speedDisplay'></div></td></tr></table>";
-
-	// this.by.innerHTML = "<table cellspacing=0 cellpadding=2 style='width:100%;height:100%;background-color:gainsboro' ><tr><td style='width:130px'>" + "<input id='playButton' type='button' onclick='playAnimation()' value='Play' style='width:60px'  /> " + "<input id='resetButton' type='button' onclick='resetDirections()' value='Reset'  style='width:60px' />" + "</td><td align='right'>" + "<a id='dirlink' class='mb0' href='javascript:setMode(1)' title='Display Directions' />Directions</a> " + "<a id='svlink' class='mb0' href='javascript:setMode(2)' title='Display Street View' />Street View</a>" + "</td></tr></table>";
  };
  
  var mapTypes = [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.HYBRID, google.maps.MapTypeId.TERRAIN];
@@ -1340,95 +1188,8 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
  	return pt1;
  };
  
- DMap.prototype.initInputForm = function () { 
-	// this.aG.innerHTML = "<table cellspacing=0 cellpadding=2 style='background-color:gainsboro;text-align:center;width:100%;font-size:14px' ><tr><td style='width:100%'>" + "<div style='font-size:18px;padding:2px;font-weight:bold'>Directions Map</div>(with Animated Street View)" + "</td></tr></table>" + "<table cellspacing=0 cellpadding=4 style='width:100%;font-size:12px' ><tr><td style='width:50px;color:gray'>" + "From" + "</td><td>" + "<input id='fromText' type='text' style='width:100%' />" + "</td></tr><tr><td style='color:gray'>" + "To" + "</td><td>" + "<input id='toText' type='text' style='width:100%' />" + "</td></tr><tr><td style='color:gray'>" + "Via" + "</td><td>" + "<input id='viaText' type='text' style='width:100%' />" + "</td></tr><tr><td style='color:gray'>" + "Mode" + "</td><td>" + "<select id='travelModeSelect' style='width:150px'>" + "<option value='0'>Driving</option>" + "<option value='1'>Walking</option>" + "<option value='2'>Bicycle</option>" + "</select> &nbsp;&nbsp;&nbsp;" + "<a href='javascript:swapDirections()' title='Reverse To and From addresses'>reverse</a>" + "</td></tr><tr><td style='color:gray'>" + "Options" + "</td><td>" + "<input id='avoidHighwaysBox' type='checkbox' /> Avoid Highways &nbsp;" + "<input id='avoidTollsBox' type='checkbox' /> Avoid Toll Roads" + "</td></tr><tr><td colspan='2'>" + "<input type='button' value='Get Directions' style='width:100%;font-size:24px;color:green' onclick='getDirections()'>" + "</td></tr></table>" + "<table cellspacing=0 cellpadding=4 style='width:100%;font-size:11px;color:gray'><tr><td colspan=2>" + "<b>Animation Options</b>" + "</td></tr><tr><td style='width:100px'>" + "Step Distance</td><td><input id='stepText' type='text' style='width:80px' /> metres" + "</td></tr><tr><td>" + "Refresh Interval</td><td><input id='intervalText' type='text' style='width:80px' /> ms" + "</td></tr><tr><td>" + "Zoom (1 - 20)</td><td><input id='zoomText' type='text' style='width:80px' />" + "</td></tr></table>" + "<p>" + "<a target='_blank' href='http://www.tripgeo.com/DirectionsMap.aspx' title='TripGeo - Create Your Directions Map' style='color:green'>TripGeo - Create Your Directions Map</a>" + "</p>" + "";
-	 this.startPanel.innerHTML = "<nav class=\"navbar navbar-inverse\"><div class=\"container\"><div class=\"navbar-header\"><button type=\"button\" class=\"navbar-toggle collapsed\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">"
-	 + "<span class=\"sr-only\">Toggle navigation</span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span></button><a class=\"navbar-brand\" href=\"#\">"
-     + "<img alt=\"PiCycle\" height=34 width=84 src=\"images/picycle2.png\"></a></div>"
-	 + "<div class=\"navbar-collapse collapse\"><ul class=\"nav navbar-nav\"><li class=\"active\"><a href=\"#\">Home</a></li><li><a href=\"#about\">About</a></li></div><!--/.nav-collapse --></div></nav>"
-	
-	 
-	 + "<div class='panel panel-success'><div class='panel-heading'><h1 class='panel-title'>Route</h1></div><div class='panel-body'>"
-	// + "<div class=\"table-responsive\"><table cellspacing=0 cellpadding=4 class='table table-striped' >" 
-	 
-	 + "<div class=\"container\"><form class=\"form-horizontal\" role=\"form\">"
-	 
-	 + "<div class=\"form-group\"><div class=\"input-group input-group-sm\"><span class=\"input-group-addon\" id=\"basic-addon1\">From</span><input onFocus=\"geolocate()\" id='fromText' type='text' class='form-control' placeholder='Eg. London, EX238RA ...' aria-describedby='basic-addon1'></div></div>"
-	 
-	 + "<div class=\"form-group\"><div class=\"input-group input-group-sm\"><span class=\"input-group-addon\" id=\"basic-addon2\">To</span>  <input id='toText'   type='text' class='form-control' placeholder='Eg. Bristol, PL272AA ...' aria-describedby='basic-addon2'></div></div>" 
-	
-	 + "<div class=\"form-group\"><button type=\"button\" onClick='javascript:swapDirections()' class=\"btn btn-info btn btn-default btn-xs\"><span class=\"glyphicon glyphicon-refresh\" aria-hidden=\"true\"></span> Reverse Addresses</button></div>" 
-	
-	 + "<div class=\"form-group\"><div class=\"input-group input-group-sm\"><span class=\"input-group-addon\" id=\"basic-addon3\">Via</span><input id='viaText' type='text' class='form-control' placeholder='Eg. Plymouth ...' aria-describedby='basic-addon3'></div></div>"
-	 
-	 + "<div class=\"form-group\"><div class=\"input-group input-group-sm\"><span class=\"input-group-addon\" id=\"basic-addon4\">Region</span><input id='regionText' type='text' class='form-control' placeholder='Eg. UK, USA' aria-describedby='basic-addon4'></div></div>"
-	 
-	 + "<div class=\"form-group\"><div class=\"input-group input-group-sm\"><span class=\"input-group-addon\" id=\"basic-addon4\">Map Type</span>"
-		
-	 +"<select class=\"form-control\" id='mapTypeSelect'>" 
-		 + "<option value='0' selected>Road</option>" 
-		 + "<option value='1'>Satellite</option>" 
-		 + "<option value='2'>Hybrid</option>" 
-		 + "<option value='3'>Terrain</option>" 
-		 + "</select></div></div>"
-	
-   + "<div class=\"form-group\"><div class=\"input-group input-group-sm\"><span class=\"input-group-addon\" id=\"basic-addon4\">Travel Mode</span>"
-		 + "<select class=\"form-control\" id='travelModeSelect' >" 
-		 + "<option value='0'>Driving</option>" 
-		 + "<option value='1'>Walking</option>" + "<option value='2'>Bicycle</option>" 
-		 + "</select></div></div>"
-
-	 + "<div class=\"form-group\"><div class=\"input-group input-group-sm\">"
-	 + "<span class=\"input-group-addon\"><input id='avoidHighwaysBox' type=\"checkbox\" aria-label=\"Avoid Highways\"> Avoid Highways</span>"
-	 + "<span class=\"input-group-addon\"><input id='avoidTollsBox' type=\"checkbox\" aria-label=\"Avoid Toll Roads\"> Avoid Toll Roads</span>"  
-	 + "<span class=\"input-group-addon\"><input id='draggableRouteBox' type=\"checkbox\" aria-label=\"Draggable Route\"> Draggable Route</span> </div></div>"
-	 
-	 + "<input id='stepText' type='hidden'><input id='intervalText' type='hidden'>"
-	 
-	 + "<div class=\"form-group\"><div class=\"input-group\"><span class=\"input-group-addon\" id=\"basic-addon7\">Zoom (1 - 20)</span><input id='zoomText' type='text' class='form-control' placeholder='Time in seconds' aria-describedby='basic-addon7'></div></div>"
-	 
-	 + "<div class=\"form-group\"><button type='button' value='Get Directions' class='btn btn-lg btn-success navbar-btn' onclick='getDirections()'></span><span class=\"glyphicon glyphicon-globe\" aria-hidden=\"true\"></span> Get Directions</button>"
-	 + "&nbsp;<button type='button' value='Save Route' class='btn btn-lg btn-primary navbar-btn' onclick=\"dmap.saveRoute();\"><span class=\"glyphicon glyphicon-save\" aria-hidden=\"true\"></span> Save Route</button></div>"
-	 + "</div></form></div></div>" ;
-	
-	 
-	 
-	 
-	eid("fromText").value 	= this.startLoc;
- 	eid("toText").value 	= this.endLoc;
- 	eid("viaText").value 	= this.viaLoc;
- 	eid("regionText").value = this.region;
- 	eid("travelModeSelect").value = this.travelMode.toString();
- 	eid("mapTypeSelect").value = this.mapType.toString();
- 	
- 	if (this.avoidHighways) {
- 		eid("avoidHighwaysBox").checked = true;
- 	} 
-
- 	if (this.avoidTolls) {
- 		eid("avoidTollsBox").checked = true;
- 	} 
- 	
- 	if (this.draggableRoute) {
- 		eid("draggableRouteBox").checked = true;
- 	}
- 	
- 	eid("stepText").value 	= this.bq;
- 	eid("intervalText").value = this.animationDelay;
- 	eid("zoomText").value 	= this.mapZoom;
- 	initAutocomplete();
- };
  
- DMap.prototype.saveRoute = function () {
-	 
-	if  (eid("fromText").value=="" || eid("toText").value==""){
-		alert("Please complete the route first");
-	}
-	
-	 var response = prompt("Name for route?", eid("fromText").value + " to " + eid("toText").value);
-	 
- };
- 
+
  DMap.prototype.dA = function () { 
 	 
  
@@ -1481,18 +1242,7 @@ function initRandom() {
  	return aN;
  };
  
- function initGeoUtils() { 
-	 if (typeof (String.prototype.toRad) === "undefined") { 
-		 Number.prototype.toRad = function () { 
-			 return this * Math.PI / 180;
- 		} 
-	} 
-	if (typeof (String.prototype.toDeg) === "undefined") { 
-		Number.prototype.toDeg = function () { 
-			return this * 180 / Math.PI;
- 		} 
-	} 
-};
+
 
  function Point2PointDistance(pt1, pt2) { 
 	var lat1 = pt1.lat();

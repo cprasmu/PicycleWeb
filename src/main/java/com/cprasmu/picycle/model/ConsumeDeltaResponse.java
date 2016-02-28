@@ -14,7 +14,15 @@ public class ConsumeDeltaResponse {
 	private double totalDistance;
 	private double aveSpeed;
 	private double maxSpeed;
+	private double power;
 	
+	
+	public double getPower() {
+		return power;
+	}
+	public void setPower(double power) {
+		this.power = power;
+	}
 	public double getAveSpeed() {
 		return aveSpeed;
 	}

@@ -10,7 +10,14 @@ public class JourneyPoint {
 	private double heartRate;
 	private double power;
 	private Location geoPoint;
+	private double load;
 	
+	public double getLoad() {
+		return load;
+	}
+	public void setLoad(double load) {
+		this.load = load;
+	}
 	public Location getGeoPoint() {
 		return geoPoint;
 	}

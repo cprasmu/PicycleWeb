@@ -83,15 +83,26 @@ public class MetricsService  {
 	}
 	
 	
-	public void setBikeLoad(double load){
+	public BikeLoadResponse setBikeLoad(double load) {
 		
-		if ((load < MIN_BIKE_LOAD) || (load > MAX_BIKE_LOAD)){
-			return;
+		BikeLoadResponse response = new BikeLoadResponse();
+		response.setLoad(load);
+		
+		if ((load < MIN_BIKE_LOAD) || (load > MAX_BIKE_LOAD)) {
+			response.setValid(false);
+			return response;
+		}
+		response.setValid(true);
+		//TODO: refactor this to a request object?
+		response.setPwmLoad(PWM_START + (int)((load-1) * PWM_MFACTOR));
+		setPwmLoad(PWM_START + (int)((load-1) * PWM_MFACTOR));
+		try{
+			currentJourney.getData().get(currentJourney.getData().size()-1).setLoad(load);
+		}catch(Exception ex){
+			System.out.println("Failed to set load for journeyPoint");
 		}
 		
-		System.out.println("Set PWM load : " + (PWM_START + (int)((load-1) * PWM_MFACTOR)) + " for Bike load : "+ load) ;
-		setPwmLoad(PWM_START + (int)((load-1) * PWM_MFACTOR));
-		
+		return response;
 	}
 	
 	
@@ -197,7 +208,7 @@ public class MetricsService  {
 	     ioinit=true;
 	}
 	
-	private double calculatePower(double x){
+	private double calculatePowerOLD(double x){
 		
 		double result;
 
@@ -211,6 +222,23 @@ public class MetricsService  {
 		return result;		
 		
 	}
+	private double calculatePower(double x){
+		
+		double result;
+
+		double xx = x*x;
+		double xxx = xx*x;
+		double xxxx = xxx*x;
+		double xxxxx = xxxx*x;
+		double xxxxxx = xxxxx*x;
+	
+		//result = -0.10129671505451972 - (30.233019453390963*x) + (5.1586949359111065*xx) - (0.286245217539615*xxx) + (0.007975447625589188*xxxx) -( 0.00010206945292925567*xxxxx) + (4.9894906712562e-7*xxxxxx);
+		
+		result = 6.91062060056678 + (6.03692479349852*x) + (0.04503497878502449*xx) + (0.00006741516356990521*xxx);
+		return result;		
+		
+	}
+	
 	
 	private MetricsService() {
 		
@@ -447,6 +475,8 @@ public class MetricsService  {
 			response.setTime(getTripTime());
 			response.setMaxSpeed(getMaxSpeedMPH());
 			response.setAveSpeed(getAveSpeedMPH());
+			response.setPower(jp.getPower());
+			
 			deltaDistance = 0f;
 		}
 		

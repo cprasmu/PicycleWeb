@@ -22,8 +22,10 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import com.cprasmu.picycle.MetricsService;
 import com.cprasmu.picycle.model.BikeJourney;
+import com.cprasmu.picycle.model.BikeLoadResponse;
 import com.cprasmu.picycle.model.ConsumeDeltaResponse;
 import com.cprasmu.picycle.model.ElevationPoint;
+import com.cprasmu.picycle.model.chart.DataSet;
 
 
 @Path("/api")
@@ -56,11 +58,54 @@ public class ApiService {
 	}
 	
 	@GET
-	@Path("/journeys/current")
+	@Path("/journeys/current/gpx")
 	@Produces("application/gpx+xml")
 	public String getJourneyGPX(){
 		response.getOutputHeaders().putSingle("Content-Disposition", "inline; filename=\""+MetricsService.getInstance().getCurrentBikeJourney().getName()+".gpx\"");
 	    return MetricsService.getInstance().getCurrentBikeJourney().toGPX();    
+	    
+	}
+	
+	@GET
+	@Path("/journeys/current/tcx")
+	@Produces("application/tcx+xml")
+	public String getJourneyTCX(){
+		response.getOutputHeaders().putSingle("Content-Disposition", "inline; filename=\""+MetricsService.getInstance().getCurrentBikeJourney().getName()+".tcx\"");
+	    return MetricsService.getInstance().getCurrentBikeJourney().toTCX();    
+	    
+	}
+	
+	@GET
+	@Path("/journeys/current/kml")
+	@Produces("application/vnd.google-earth.kml+xml")
+	public String getJourneyKML(){
+		response.getOutputHeaders().putSingle("Content-Disposition", "inline; filename=\""+MetricsService.getInstance().getCurrentBikeJourney().getName()+".kml\"");
+	    return MetricsService.getInstance().getCurrentBikeJourney().toKML();    
+	    
+	}
+	
+	@GET
+	@Path("/journeys/current/livestart")
+	@Produces("application/vnd.google-earth.kml+xml")
+	public String getJourneyKMLLiveStart(){
+	
+	    return MetricsService.getInstance().getCurrentBikeJourney().KMLLiveStart();    
+	    
+	}
+	
+	@GET
+	@Path("/journeys/current/livekml")
+	@Produces("application/vnd.google-earth.kml+xml")
+	public String getJourneyKMLLive(){
+	    return MetricsService.getInstance().getCurrentBikeJourney().KMLLive();    
+	    
+	}
+	
+	@GET
+	@Path("/journeys/current/chartseries")
+	@Produces("application/json")
+	public DataSet getChartSeries(){
+	    return MetricsService.getInstance().getCurrentBikeJourney().getSeries("callbackDunctionName") ;
 	    
 	}
 	
@@ -116,12 +161,12 @@ public class ApiService {
 	
 	@GET
 	@Path("/bikeLoad/{load}/{altitude}")
-	@Produces("text/plain")
-	public String bikeLoad(@PathParam("altitude")double altitude,@PathParam("load")double load){
-		
+	@Produces("application/json")
+	public BikeLoadResponse bikeLoad(@PathParam("altitude")double altitude,@PathParam("load")double load){
+
 		MetricsService.getInstance().setAltitude(altitude);
-		MetricsService.getInstance().setBikeLoad(load);
-	    return "Load set to : " + altitude;    
+		
+	    return MetricsService.getInstance().setBikeLoad(load);  
 	}
 	
 	@GET

@@ -7,7 +7,8 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 <script src="https://code.highcharts.com/stock/highstock.js"></script>
 <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
-<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+<!--script src="https://code.highcharts.com/stock/modules/exporting.js"></script-->
 <meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDVyQlW4jGu8DKHMBRzKdXS1xSyhlk2jr4&signed_in=true&libraries=places"></script>
 <!--script type="text/javascript" src="http://maps.google.com/maps/api/js?signed_in=true&libraries=places"></script-->
@@ -21,12 +22,12 @@
 	var placeSearch, autocompleteFrom, autocompleteTo, autocompleteVia;
 	
 	var componentForm = {
-	        street_number: 'short_name',
-	        route: 'long_name',
-	        locality: 'long_name',
+	        street_number	: 'short_name',
+	        route			: 'long_name',
+	        locality		: 'long_name',
 	        administrative_area_level_1: 'short_name',
-	        country: 'long_name',
-	        postal_code: 'short_name'
+	        country			: 'long_name',
+	        postal_code		: 'short_name'
 	 };
 	
 	 function initAutocomplete() {
@@ -46,8 +47,8 @@
 	        var place = autocomplete.getPlace();
 
 	        for (var component in componentForm) {
-	    //      document.getElementById(component).value = '';
-	   //       document.getElementById(component).disabled = false;
+	    		//document.getElementById(component).value = '';
+	   			//document.getElementById(component).disabled = false;
 	        }
 
 	        // Get each component of the address from the place details
@@ -99,7 +100,7 @@
  		this.aL 			= 0;
  		this.ai 			= 2;// mode or initial mode?
  		this.draggableRoute = false;//draggable route?
- 		this.animationDelay = 1000;
+ 		this.animationDelay = 2000;
  		this.bq 			= 20;//not used now was step distance
  		this.mapZoom 		= 15;
  		this.directionsRenderer = null;
@@ -112,6 +113,7 @@
  		this.mapPanel 		= null;
  		this.streetViewPanel= null;
  		this.headerPanel 	= null;
+ 		this.metaPanel		= null;
  		this.directionsPanel= null;
  		this.waitPanel 		= null;
  		this.l 				= null;//location
@@ -129,8 +131,218 @@
  		this.elevationData 	= [];
  		this.inclineData 	= [];
  		this.chart			= null;
- 		this.currentDirections =null;
+ 		this.currentDirections = null;
  		this.journeyName	= null;
+ 		
+ 		
+ 	// Load the fonts
+ 		Highcharts.createElement('link', {
+ 		   href: '//fonts.googleapis.com/css?family=Unica+One',
+ 		   rel: 'stylesheet',
+ 		   type: 'text/css'
+ 		}, null, document.getElementsByTagName('head')[0]);
+
+ 		Highcharts.theme = {
+ 		   colors: ["#2b908f", "#90ee7e", "#f45b5b", "#7798BF", "#aaeeee", "#ff0066", "#eeaaee", "#55BF3B", "#DF5353", "#7798BF", "#aaeeee"],
+ 		   chart: {
+ 		      backgroundColor: {
+ 		         linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+ 		         stops: [
+ 		            [0, '#2a2a2b'],
+ 		            [1, '#3e3e40']
+ 		         ]
+ 		      },
+ 		      style: {
+ 		         fontFamily: "'Unica One', sans-serif"
+ 		      },
+ 		      plotBorderColor: '#606063'
+ 		   },
+ 		   title: {
+ 		      style: {
+ 		         color: '#E0E0E3',
+ 		         textTransform: 'uppercase',
+ 		         fontSize: '20px'
+ 		      }
+ 		   },
+ 		   subtitle: {
+ 		      style: {
+ 		         color: '#E0E0E3',
+ 		         textTransform: 'uppercase'
+ 		      }
+ 		   },
+ 		   xAxis: {
+ 		      gridLineColor: '#707073',
+ 		      labels: {
+ 		         style: {
+ 		            color: '#E0E0E3'
+ 		         }
+ 		      },
+ 		      lineColor: '#707073',
+ 		      minorGridLineColor: '#505053',
+ 		      tickColor: '#707073',
+ 		      title: {
+ 		         style: {
+ 		            color: '#A0A0A3'
+
+ 		         }
+ 		      }
+ 		   },
+ 		   yAxis: {
+ 		      gridLineColor: '#707073',
+ 		      labels: {
+ 		         style: {
+ 		            color: '#E0E0E3'
+ 		         }
+ 		      },
+ 		      lineColor: '#707073',
+ 		      minorGridLineColor: '#505053',
+ 		      tickColor: '#707073',
+ 		      tickWidth: 1,
+ 		      title: {
+ 		         style: {
+ 		            color: '#A0A0A3'
+ 		         }
+ 		      }
+ 		   },
+ 		   tooltip: {
+ 		      backgroundColor: 'rgba(0, 0, 0, 0.75)',
+ 		      style: {
+ 		         color: '#F0F0F0'
+ 		      }
+ 		   },
+ 		   plotOptions: {
+ 		      series: {
+ 		         dataLabels: {
+ 		            color: '#B0B0B3'
+ 		         },
+ 		         marker: {
+ 		            lineColor: '#333'
+ 		         }
+ 		      },
+ 		      boxplot: {
+ 		         fillColor: '#505053'
+ 		      },
+ 		      candlestick: {
+ 		         lineColor: 'white'
+ 		      },
+ 		      errorbar: {
+ 		         color: 'white'
+ 		      }
+ 		   },
+ 		   legend: {
+ 		      itemStyle: {
+ 		         color: '#E0E0E3'
+ 		      },
+ 		      itemHoverStyle: {
+ 		         color: '#FFF'
+ 		      },
+ 		      itemHiddenStyle: {
+ 		         color: '#606063'
+ 		      }
+ 		   },
+ 		   credits: {
+ 		      style: {
+ 		         color: '#666'
+ 		      }
+ 		   },
+ 		   labels: {
+ 		      style: {
+ 		         color: '#707073'
+ 		      }
+ 		   },
+
+ 		   drilldown: {
+ 		      activeAxisLabelStyle: {
+ 		         color: '#F0F0F3'
+ 		      },
+ 		      activeDataLabelStyle: {
+ 		         color: '#F0F0F3'
+ 		      }
+ 		   },
+
+ 		   navigation: {
+ 		      buttonOptions: {
+ 		         symbolStroke: '#DDDDDD',
+ 		         theme: {
+ 		            fill: '#505053'
+ 		         }
+ 		      }
+ 		   },
+
+ 		   // scroll charts
+ 		   rangeSelector: {
+ 		      buttonTheme: {
+ 		         fill: '#505053',
+ 		         stroke: '#000000',
+ 		         style: {
+ 		            color: '#CCC'
+ 		         },
+ 		         states: {
+ 		            hover: {
+ 		               fill: '#707073',
+ 		               stroke: '#000000',
+ 		               style: {
+ 		                  color: 'white'
+ 		               }
+ 		            },
+ 		            select: {
+ 		               fill: '#000003',
+ 		               stroke: '#000000',
+ 		               style: {
+ 		                  color: 'white'
+ 		               }
+ 		            }
+ 		         }
+ 		      },
+ 		      inputBoxBorderColor: '#505053',
+ 		      inputStyle: {
+ 		         backgroundColor: '#333',
+ 		         color: 'silver'
+ 		      },
+ 		      labelStyle: {
+ 		         color: 'silver'
+ 		      }
+ 		   },
+
+ 		   navigator: {
+ 		      handles: {
+ 		         backgroundColor: '#666',
+ 		         borderColor: '#AAA'
+ 		      },
+ 		      outlineColor: '#CCC',
+ 		      maskFill: 'rgba(255,255,255,0.1)',
+ 		      series: {
+ 		         color: '#7798BF',
+ 		         lineColor: '#A6C7ED'
+ 		      },
+ 		      xAxis: {
+ 		         gridLineColor: '#505053'
+ 		      }
+ 		   },
+
+ 		   scrollbar: {
+ 		      barBackgroundColor: '#808083',
+ 		      barBorderColor: '#808083',
+ 		      buttonArrowColor: '#CCC',
+ 		      buttonBackgroundColor: '#606063',
+ 		      buttonBorderColor: '#606063',
+ 		      rifleColor: '#FFF',
+ 		      trackBackgroundColor: '#404043',
+ 		      trackBorderColor: '#404043'
+ 		   },
+
+ 		   // special colors for some of the
+ 		   legendBackgroundColor: 'rgba(0, 0, 0, 0.5)',
+ 		   background2: '#505053',
+ 		   dataLabelsColor: '#B0B0B3',
+ 		   textColor: '#C0C0C0',
+ 		   contrastTextColor: '#F0F0F3',
+ 		   maskColor: 'rgba(255,255,255,0.3)'
+ 		};
+
+ 		// Apply the theme
+ 		Highcharts.setOptions(Highcharts.theme);
+ 		
  		
  		this.chartOptions = {chart:{animation:false,   defaultSeriesType:"area",  ignoreHiddenSeries:false,  backgroundColor:"#262528", margin:[30,0,30,0], spacingTop:3, spacingRight:0, events:{}  },  
      //	series:[{name:"Target", type:["area"], data:{}, dataGrouping:{smoothed:false}},
@@ -231,6 +443,60 @@
 		};
  };
  
+ var gaugeOptions = {
+
+	        chart: {
+	            type: 'solidgauge'
+	        },
+
+	        title: null,
+
+	        pane: {
+	            center: ['50%', '85%'],
+	            size: '140%',
+	            startAngle: -90,
+	            endAngle: 90,
+	            background: {
+	                backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+	                innerRadius: '60%',
+	                outerRadius: '100%',
+	                shape: 'arc'
+	            }
+	        },
+
+	        tooltip: {
+	            enabled: false
+	        },
+
+	        // the value axis
+	        yAxis: {
+	            stops: [
+	                [0.1, '#55BF3B'], // green
+	                [0.5, '#DDDF0D'], // yellow
+	                [0.9, '#DF5353'] // red
+	            ],
+	            lineWidth: 0,
+	            minorTickInterval: 10,
+	            tickPixelInterval: 100,
+	            tickWidth: 1,
+	            title: {
+	                y: -70
+	            },
+	            labels: {
+	                y: 16
+	            }
+	        },
+
+	        plotOptions: {
+	            solidgauge: {
+	                dataLabels: {
+	                    y: 5,
+	                    borderWidth: 0,
+	                    useHTML: true
+	                }
+	            }
+	        }
+	    };
 
  
  function loadPage() { 
@@ -258,6 +524,9 @@
  	if (window.DeviceMotionEvent != undefined) {
  		dmap.initGryo();
  	}
+ 	
+ 	dmap.buildGuages();
+ 	
  	/*
  	setInterval( function() {
  		var landscapeOrientation = window.innerWidth/window.innerHeight > 1;
@@ -366,24 +635,34 @@
 		 		document.getElementById('timeDisplay').innerHTML = "Time : " +  timeSecs.toISOString().substr(11, 8); 
 		 		document.getElementById('aveSpeedDisplay').innerHTML = "Ave Speed : " + response.aveSpeed.toFixed(1) + " MPH" ;
 		 		document.getElementById('maxSpeedDisplay').innerHTML = "Max Speed : " + response.maxSpeed.toFixed(1) + " MPH" ;
+		 		document.getElementById('powerDisplay').innerHTML = "Power : " + response.power.toFixed(1) + " Watts" ;
+		 		
+		 		
+		 		dmap.updateSpeedGuage(Math.floor(response.speed * 10)/10);
+		 		dmap.updateRpmGuage(Math.floor(response.cadence * 10)/10);
+		 		dmap.updatePowerGuage(Math.floor(response.power));
+		 		
 		 		
 		 		var rowPos  = Math.round((response.totalDistance / dmap.currentDirections.routes[0].legs[0].distance.value) * dmap.inclineData.length);
 		 		var curGrad = dmap.inclineData[rowPos];
 		 		
 		 		//dmap.chart.series[2].setData([2,2,3,4,5])//
-		 		dmap.chart.series[0].addPoint([response.time, dmap.elevationData[rowPos][1]]);
-		 		dmap.chart.series[1].addPoint([response.time, curGrad[1]]);
-		 		dmap.chart.series[2].addPoint([response.time, response.speed]);
-		 		dmap.chart.series[3].addPoint([response.time, response.cadence]);
-		 		dmap.chart.series[4].addPoint([response.time, response.distance]);
+		 		dmap.chart.series[0].addPoint([response.time, Math.floor(dmap.elevationData[rowPos][1])],false,false);
+		 		dmap.chart.series[1].addPoint([response.time, curGrad[1]],false,false);
+		 		dmap.chart.series[2].addPoint([response.time, response.speed],false,false);
+		 		dmap.chart.series[3].addPoint([response.time, response.cadence],false,false);
+		 		dmap.chart.series[4].addPoint([response.time, Math.floor(response.power)],false,false);
 		 		dmap.chart.redraw();
 		 		
 		 		var altitude = dmap.elevationData[rowPos];
 		 		
 		 		// callAjax("api2/bike?load="+ (3+(curGrad[1]/8)).toFixed(1) + "&altitude=" + altitude, function(response1){
 		 		 if (dK>0) {
-			 		callAjax("services/api/bikeLoad/"+ (3+(curGrad[1]/8)).toFixed(1) + "/" + altitude[1], function(response1){
-			 			// console.log(response1);
+			 		callAjax("services/api/bikeLoad/"+ (3+(curGrad[1]/8)).toFixed(1) + "/" + altitude[1], function(response) {
+			 			
+			 			var resp = JSON.parse(response);
+			 			dmap.updateLoadGuage(resp.load);
+			 			// console.log(response);
 			 		 });
 		 		 }
 		 		
@@ -597,19 +876,20 @@
  DMap.prototype.buildChart2 = function(data){
 		    
 	 
-	 	this.chartOptions.series= [{name:"Altitude", type:["area"], data:data[0], dataGrouping:{smoothed:false},tooltip: {
+	 	this.chartOptions.series = [{name:"Altitude", type:["area"], data:data[0], dataGrouping:{smoothed:false},tooltip: {
             valueSuffix: ' ft'
         }},
-	         			{name:"Incline", color:"#00FF00", type:["line"], data:data[1]}, 
-	         			{name:"Speed",color:"#ff0000", type:["line"], data:{}}, 
-	         			{name:"Cadence",color:"#ffffff",type:["line"],data:{}}, 
-	         			{name:"Power",color:"#ffff4d",type:["line"],data:{},shadow:true}];
+        
+		{name:"Incline", color:"#00FF00", type:["line"], data:data[1]}, 
+		{name:"Speed",color:"#ff0000", type:["line"], data:{}}, 
+		{name:"Cadence",color:"#ffffff",type:["line"],data:{}}, 
+		{name:"Power",color:"#ffff4d",type:["line"],data:{},shadow:true}];
 	 	
 	 
 	  //  this.chartOptions.series[0].data = elevationData[0];
 	 //   this.chartOptions.series[1].data = elevationData[1];
 
-	    this.chartOptions.yAxis.plotLines[0].value = 218;
+	   // this.chartOptions.yAxis.plotLines[0].value = 218;
 		$("#stockContainer").highcharts('StockChart', this.chartOptions);
 		this.chart= $("#stockContainer").highcharts();
  }
@@ -617,25 +897,192 @@
  
  DMap.prototype.buildChart = function(data){
 	    
-	 
+	 /*
 	 	this.chartOptions.series= [	{name:"Altitude", type:["area"], data:[0,0], dataGrouping:{smoothed:false},tooltip: { valueDecimals: 2,valueSuffix: ' ft' },fillColor : { linearGradient : {   x1: 0,
                 y1: 1,
                 x2: 0,
                 y2: 0
             },
-            stops : [
-                [0, Highcharts.getOptions().colors[0]],
-                [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
-            ]
+            stops : [ [0, Highcharts.getOptions().colors[0]],[1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')] ]
         }},
-	         						{name:"Incline", color:"#00FF00", type:["line"], data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' %' }}, 
-	         						{name:"Speed",color:"#ff0000", type:["line"], data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' Mph' }}, 
-	         						{name:"Cadence",color:"#ffffff",type:["line"],data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' RPM' }}, 
-	         						{name:"Power",color:"#ffff4d",type:["line"],data:[0,0],shadow:true}];
-	
-	    this.chartOptions.yAxis.plotLines[0].value = 218;
+        */
+        
+        this.chartOptions.series = [{name:"Altitude", type:["area"], data:data[0], dataGrouping:{smoothed:false},tooltip: {
+            valueSuffix: ' ft'
+        }},
+		{name:"Incline", color:"#00FF00", type:["line"], data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' %' }}, 
+		{name:"Speed",color:"#ff0000", type:["line"], data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' Mph' }}, 
+		{name:"Cadence",color:"#ffffff",type:["line"],data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' Rpm' }}, 
+		{name:"Power",color:"#ffff4d",type:["line"],data:[0,0],shadow:true}];
+
+	  //  this.chartOptions.yAxis.plotLines[0].value = 218;
 		$("#stockContainer").highcharts('StockChart', this.chartOptions);
 		this.chart= $("#stockContainer").highcharts();
+		
+		
+}
+ 
+ DMap.prototype.buildGuages = function() {
+	 
+	 
+	 $('#container-speed').highcharts(Highcharts.merge(gaugeOptions, {
+	        yAxis: {
+	            min: 0,
+	            max: 60,
+	            title: {
+	                text: 'Speed'
+	            }
+	        },
+
+	        credits: {
+	            enabled: false
+	        },
+
+	        series: [{
+	            name: 'Speed',
+	            data: [0],
+	            dataLabels: {
+	                format: '<div style="text-align:center"><span style="font-size:12px;color:' +
+	                    ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y}</span><br/>' +
+	                       '<span style="font-size:8px;color:silver">Mph</span></div>'
+	            },
+	            tooltip: {
+	                valueSuffix: ' Mph'
+	            }
+	        }]
+
+	    }));
+
+	    // The RPM gauge
+	    $('#container-rpm').highcharts(Highcharts.merge(gaugeOptions, {
+	        yAxis: {
+	            min: 0,
+	            max: 150,
+	            title: {
+	                text: 'Rpm'
+	            }
+	        },
+	        
+	        credits: {
+	            enabled: false
+	        },
+	        
+	        series: [{
+	            name: 'Cadence',
+	            data: [0],
+	            dataLabels: {
+	                format: '<div style="text-align:center"><span style="font-size:12px;color:' +
+	                    ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y:.1f}</span><br/>' +
+	                       '<span style="font-size:8px;color:silver"> Rpm</span></div>'
+	            },
+	            tooltip: {
+	                valueSuffix: ' revolutions/min'
+	            }
+	        }]
+
+	    }));
+	    
+	    // The Power gauge
+	    $('#container-power').highcharts(Highcharts.merge(gaugeOptions, {
+	        yAxis: {
+	            min: 0,
+	            max: 1500,
+	            title: {
+	                text: 'Watts'
+	            }
+	        },
+	        
+	        credits: { enabled: false },
+	        
+	        series: [{
+	            name: 'Cadence',
+	            data: [0],
+	            dataLabels: {
+	                format: '<div style="text-align:center"><span style="font-size:12px;color:' +
+	                    ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y:.1f}</span><br/>' +
+	                       '<span style="font-size:8px;color:silver"> Watts</span></div>'
+	            },
+	            tooltip: {
+	                valueSuffix: ' Watts'
+	            }
+	        }]
+
+	    }));
+	    
+	    // The Load gauge
+	    $('#container-load').highcharts(Highcharts.merge(gaugeOptions, {
+	        yAxis: {
+	            min: 1,
+	            max: 5,
+	            title: {
+	                text: 'Load'
+	            }
+	        },
+	        
+	        credits: { enabled: false  },
+	        
+	        series: [{
+	            name: 'Load',
+	            data: [0],
+	            dataLabels: {
+	                format: '<div style="text-align:center"><span style="font-size:12px;color:' +
+	                    ((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{y:.1f}</span><br/>' +
+	                       '<span style="font-size:8px;color:silver"></span></div>'
+	            },
+	            tooltip: {
+	                //valueSuffix: ' revolutions/min'
+	            }
+	        }]
+
+	    }));
+ }
+	 
+ DMap.prototype.updateSpeedGuage = function (speed) {
+	 
+	 var chart = $('#container-speed').highcharts(),
+     point;
+
+ 	if (chart) {
+     	point = chart.series[0].points[0];
+     	point.update(speed);
+ 	}
+ 	
+ }
+
+DMap.prototype.updateRpmGuage = function (rpm) {
+	 
+	 var chart = $('#container-rpm').highcharts(),
+     point;
+
+ 	if (chart) {
+     	point = chart.series[0].points[0];
+     	point.update(rpm);
+ 	}
+ 	
+ }
+ 
+DMap.prototype.updatePowerGuage = function (power) {
+	 
+	 var chart = $('#container-power').highcharts(),
+    point;
+
+	if (chart) {
+    	point = chart.series[0].points[0];
+    	point.update(power);
+	}
+	
+}
+
+DMap.prototype.updateLoadGuage = function (load) {
+	 
+	 var chart = $('#container-load').highcharts(),
+    point;
+
+	if (chart) {
+    	point = chart.series[0].points[0];
+    	point.update(load);
+	}
+	
 }
  
  DMap.prototype.testChart = function (startTime, endTime) {
@@ -986,6 +1433,7 @@
 	 	getElevationForPath(cL.routes[0].overview_polyline,function(data){
 		 
 		me.buildChart(data);
+		
 			 
 	},cL.routes[0].legs[0].distance.value, me.journeyName);
 	 }
@@ -1059,6 +1507,7 @@
  	ag += "<div id='directionsPanel' style='position:absolute;display:none;overflow:auto'></div>";
  	ag += "<div id='mapPanel' style='position:absolute;display:none'></div>";
  	ag += "<div id='streetViewPanel' style='position:absolute;display:none'></div>";
+ 	ag += "<div id='metaPanel' style='position:absolute;display:none'></div>";
  	ag += "<div id='waitPanel' style='position:absolute;display:none'></div>";
  	ag += "<div id='stockContainer' style='position:absolute;'></div>"; 
  	
@@ -1068,6 +1517,7 @@
  	this.mapPanel = eid("mapPanel");
  	this.streetViewPanel = eid("streetViewPanel");
  	this.directionsPanel = eid("directionsPanel");
+ 	this.metaPanel = eid("metaPanel");
  	this.waitPanel = eid("waitPanel");
  	this.elePan = eid("stockContainer");//new
  	this.resizeElements();
@@ -1101,7 +1551,7 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
 		} 
 };
 
- DMap.prototype.resizeElements = function (a) { 
+DMap.prototype.resizeElementsOrig = function (a) { 
 	this.calcWindowDimensions();
 	var barHeight = 50;
 	var L = barHeight + 150;
@@ -1150,6 +1600,79 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
 		this.tt(this.elePan, true , 0, barHeight , 100, ht);
 		this.t(this.streetViewPanel, this.bi == 2, 0, barHeight + ht, wd, ht);
  		this.t(this.mapPanel, true,                0, barHeight + (ht*2),  wd, ht);
+ 		
+ 	} 
+ 	
+ 	if (eid("directionsDiv") && (this.width > 0)) { 
+ 		eid("directionsDiv").style.width = (this.width - 30) + "px";
+ 	} 
+ 	if (map) { 
+ 		google.maps.event.trigger(map, "resize");
+ 	} 
+ 	if (pan) { 
+ 		google.maps.event.trigger(pan, "resize");
+ 	} 
+ 	//if (this.elevationData){
+ 		//if (this.chart){
+ 	
+ 			//this.chart.draw(google.visualization.arrayToDataTable(this.elevationData));
+ 		//}
+ 	//}
+ };
+ 
+ 
+ DMap.prototype.resizeElements = function (a) { 
+	this.calcWindowDimensions();
+	var barHeight = 50;
+	var L = barHeight + 150;
+	
+ 	if (this.bi == 0) { 
+ 		var ht = this.height;
+ 		var ht1 = parseInt((this.height - L + 1) / 2);
+ 		var wd = this.width;
+		this.t(this.startPanel, true, 0, 0, wd, ht);
+ 		this.t(this.mapPanel, false, 0, ht1, wd, ht1);
+ 		this.t(this.headerPanel, false, 0, 0, wd, L);
+ 		this.t(this.streetViewPanel, false, 0, 0, wd, ht1);
+ 		this.t(this.directionsPanel, false, 0, 0, 0, wd, ht1);
+ 		this.t(this.waitPanel, false, 0, 0, wd, ht1);
+ 		this.t(this.metaPanel, false, 0, 0, wd, ht1);
+ 		this.t(this.elePan, false, 0, 0, 0, wd, ht1);
+ 		
+ 	} else if (this.bi == 3) { 
+ 		var ht = this.height;
+ 		var ht1 = parseInt((this.height - L + 1) / 2);
+ 		var wd = this.width;
+ 		this.t(this.waitPanel, true, 0, 0, wd, ht);
+ 		this.t(this.startPanel, false, 0, 0, wd, ht);
+ 		this.t(this.mapPanel, false, 0, ht1, wd, ht1);
+ 		this.t(this.headerPanel, false, 0, 0, wd, L);
+ 		this.t(this.streetViewPanel, false, 0, 0, wd, ht1);
+ 		this.t(this.directionsPanel, false, 0, 0, 0, wd, ht1);
+ 		this.t(this.metaPanel, false, 0, 0, wd, ht1);
+ 		this.t(this.elePan, false, 0, 0, 0, wd, ht1);
+ 		
+ 	} else { 
+ 		var ht = parseInt((this.height - barHeight) / 3);
+ 		//var ht = parseInt((this.height - L + 1) / 2);
+ 		var wd = this.width;
+ 		var y1 = L;
+ 		var y2 = L + ht;
+ 		var y3 = this.height - L;
+ 		this.t(this.startPanel, false, 0, 0, wd, ht);
+ 		//this.t(this.headerPanel, true, 0, 0, wd, L-150);
+ 		this.t(this.headerPanel, true, 0, 0, wd,barHeight);
+ 		
+ 		this.t(this.directionsPanel, this.bi == 1, 0, y1, wd, ht);
+ 		//this.t(this.streetViewPanel, this.bi == 2, 0, y1, wd, ht);
+ 	//	this.t(this.mapPanel, true, 0, y2, wd, ht);
+ 		this.t(this.waitPanel    , false, 0, 0,  wd, ht);
+	//	this.tt(this.elePan, true , 0, 30, 100, ht/2);
+	
+		this.tt(this.elePan, true , 0, barHeight , 100, ht);
+		this.t(this.streetViewPanel, this.bi == 2, 0, barHeight + ht, wd, ht);
+ 		this.t(this.mapPanel, true,                0, barHeight + (ht*2),  wd/2, ht);
+ 		this.t(this.metaPanel, true,   wd/2, barHeight + (ht*2),  wd/2, ht);
  		
  	} 
  	
@@ -1432,19 +1955,49 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
  
  DMap.prototype.bp = function () { 
 	 this.headerPanel.innerHTML = "<nav class=\"navbar navbar-inverse\"><div class=\"container\"><div class=\"navbar-header\"><button type=\"button\" class=\"navbar-toggle collapsed\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">"
-		 + "<span class=\"sr-only\">Toggle navigation</span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span></button><a class=\"navbar-brand\" href=\"#\">"
+		 + "<span class=\"sr-only\">Toggle navigation</span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span><span class=\"icon-bar\"></span></button><a class=\"navbar-brand\" href=\"services/api/journeys/current/gpx\">"
 	     + "<img alt=\"PiCycle\" height=34 width=84 src=\"images/picycle2.png\"></a></div>"
 		 + "<div class=\"navbar-collapse collapse\"><ul class=\"nav navbar-nav\">"
 		 + "<li class=\"active\"><button type=\"button\" id='playButton' onclick='playAnimation()' class=\"btn btn-primary navbar-btn\">Start</button></li>"
 		 + "<li class=\"active\"><button type=\"button\" id='resetButton' onclick='resetDirections()' class=\"btn btn-danger navbar-btn\">Reset</button></li>"
-		 + "<li class=\"active\"><span class=\"label label-default\" id='distDisplay'></span></li>"
-		 + "<li class=\"active\"><span class=\"label label-default\" id='speedDisplay'></span></li>"
-		 + "<li class=\"active\"><span class=\"label label-default\" id='cadenceDisplay'></span></li>"
-		 + "<li class=\"active\"><span class=\"label label-default\" id='timeDisplay'></span></li>"
-		 + "<li class=\"active\"><span class=\"label label-default\" id='aveSpeedDisplay'></span></li>"
-		 + "<li class=\"active\"><span class=\"label label-default\" id='maxSpeedDisplay'></span></li>"
-		 + "</div><!--/.nav-collapse --></div></nav>"
+		 
+		 + "<li class=\"dropdown\"><a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Map Type<span class=\"caret\"></span></a>"
+         + "<ul class=\"dropdown-menu\">"
+         + "<li><a href=\"#\" onClick=\"map.setMapTypeId('roadmap');\">Road</a></li>"
+         + "<li><a href=\"#\" onClick=\"map.setMapTypeId('satellite');\">Satellite</a></li>"
+         + "<li><a href=\"#\" onClick=\"map.setMapTypeId('hybrid');\">Hybrid</a></li>"
+         + "<li><a href=\"#\" onClick=\"map.setMapTypeId('terrain');\">Terrain</a></li>"
+         + "<li><a href=\"#\" onClick=\"map.setMapTypeId('OpenStreetMap');\">Open Street Map</a></li>"
+         + "<li><a href=\"#\" onClick=\"map.setMapTypeId('OpenStreetMapOSM');\">Open Street Map MQ</a></li>"
+         + "<li><a href=\"#\" onClick=\"map.setMapTypeId('OpenTopoMap');\">Open Topo Map</a></li>"
+         + "<li><a href=\"#\" onClick=\"map.setMapTypeId('OpenCycleMap');\">Open Cycle Map</a></li>"
+         + "</ul></li>"
+		 
+	//	 + "<li class=\"active\"><span class=\"label label-default\" id='distDisplay'></span></li>"
+		// + "<li class=\"active\"><span class=\"label label-default\" id='speedDisplay'></span></li>"
+		// + "<li class=\"active\"><span class=\"label label-default\" id='cadenceDisplay'></span></li>"
+	//	 + "<li class=\"active\"><span class=\"label label-default\" id='timeDisplay'></span></li>"
+	//	 + "<li class=\"active\"><span class=\"label label-default\" id='aveSpeedDisplay'></span></li>"
+	//	 + "<li class=\"active\"><span class=\"label label-default\" id='maxSpeedDisplay'></span></li>"
+	//	 + "<li class=\"active\"><span class=\"label label-default\" id='powerDisplay'></span></li>"
+		 + "</div><!--/.nav-collapse --></div></nav>";
 
+		 this.metaPanel.innerHTML = "<div id=\"gauge-container\" ><div id=\"container-speed\" style=\"width: 25%; height: 40%; float: left\"></div>"
+		 + "<div id=\"container-rpm\" style=\"width: 25%; height: 40%; float: left\"></div>"
+		 + "<div id=\"container-power\" style=\"width: 25%; height: 40%; float: left\"></div>"
+		 + "<div id=\"container-load\" style=\"width: 25%; height: 40%; float: left\"></div></div>"
+		 + "<div class=\"container-fluid\"><div class=\"row\">"
+		 + "<span class=\"label label-default\" id='distDisplay'></span>"
+		 + "<span class=\"label label-default\" id='speedDisplay'></span>"
+		 + "</div><div class=\"row\">"
+		 + "<span class=\"label label-default\" id='cadenceDisplay'></span>"
+		 + "<span class=\"label label-default\" id='timeDisplay'></span>"
+		 + "</div><div class=\"row\">"
+		 + "<span class=\"label label-default\" id='aveSpeedDisplay'></span>"
+		 + "<span class=\"label label-default\" id='maxSpeedDisplay'></span>"
+		 + "</div><div class=\"row\">"
+		 + "<span class=\"label label-default\" id='powerDisplay'></span></div></div>";
+		 
 	// this.by.innerHTML = "<table cellspacing=0 cellpadding=2 style='width:100%;height:100%;background-color:gainsboro' ><tr><td style='width:130px'>" + "<input id='playButton' type='button' onclick='playAnimation()' value='Play' style='width:60px'  /> " + "<input id='resetButton' type='button' onclick='resetDirections()' value='Reset'  style='width:60px' />" + "</td><td align='right'>" + "<a id='dirlink' class='mb0' href='javascript:setMode(1)' title='Display Directions' />Directions</a> " + "<a id='svlink' class='mb0' href='javascript:setMode(2)' title='Display Street View' />Street View</a>" + "</td></tr></table>";
  };
  
@@ -1474,7 +2027,7 @@ DMap.prototype.tt = function (ab, cq, x, y, aO, aa) {
 		 + "<option value='2'>Hybrid</option>" 
 		 + "<option value='3'>Terrain</option>" 
 		 + "<option value='4'>Open Street Map</option>"
-		 + "<option value='5'>Open Street Map OSM</option>"
+		 + "<option value='5'>Open Street Map MQ</option>"
 		 + "<option value='6'>Open Topo Map</option>"
 		 + "<option value='7'>Open Cycle Map</option>"
 		 + "</select></div></div>"

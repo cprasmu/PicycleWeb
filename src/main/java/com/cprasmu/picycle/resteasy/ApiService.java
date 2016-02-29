@@ -21,10 +21,12 @@ import javax.ws.rs.core.Context;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.cprasmu.picycle.MetricsService;
+import com.cprasmu.picycle.Utils;
 import com.cprasmu.picycle.model.BikeJourney;
 import com.cprasmu.picycle.model.BikeLoadResponse;
 import com.cprasmu.picycle.model.ConsumeDeltaResponse;
 import com.cprasmu.picycle.model.ElevationPoint;
+import com.cprasmu.picycle.model.Location;
 import com.cprasmu.picycle.model.chart.DataSet;
 
 
@@ -204,6 +206,13 @@ public class ApiService {
 		return evelvationProfile;
 	}
 	
-	
+	@POST
+	@Path("/decodePolyline/{poly}")
+	@Produces("application/json")
+	@Consumes("application/json")
+	public List<Location> decodePolyline(String polyline){
+		
+	    return Utils.decodePoly(polyline);  
+	}
 }
 

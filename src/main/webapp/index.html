@@ -79,6 +79,18 @@
         }
 	}
 	 
+	function PiLoc(obj) {  
+		this.a=obj.lat;
+		this.b=obj.lng;
+	}
+	
+	PiLoc.prototype.lat=function() {
+		return this.a;
+	};
+	PiLoc.prototype.lng=function() {
+		return this.b;
+	};
+	
 	function DMap() { 
 		this.streeViewZoom = 1;
 		this.accelerationX	=0;
@@ -621,7 +633,7 @@
 		 
 		 if (dmap.F) { 
 			 
-			 //callAjax("api2/deltaDistance?lat="+ dmap.l.lat() + "&lng="+ dmap.l.lng(), function(response) {
+			 //get delta from bike plus all other meta fields
 			 callAjax("services/api/consumeDelta/"+ dmap.l.lat() + "/"+ dmap.l.lng(), function(response) {
 		 		response = JSON.parse(response);
 				var dK = response.distance;
@@ -986,7 +998,7 @@
 	    $('#container-power').highcharts(Highcharts.merge(gaugeOptions, {
 	        yAxis: {
 	            min: 0,
-	            max: 1500,
+	            max: 1000,
 	            title: {
 	                text: 'Watts'
 	            }
@@ -1858,25 +1870,28 @@ DMap.prototype.resizeElementsOrig = function (a) {
 };
  
  DMap.prototype.bB = function (pt, df) { 
-	 if (!pandas.length) { 
+	
+	if (!pandas.length) { 
+		//load the images
 		for (var i = 0;i < 16; i++) { 
 			 pandas[i] = new google.maps.MarkerImage("images/pegman.png", new google.maps.Size(49, 52), new google.maps.Point(0, i * 52), new google.maps.Point(25, 36));
  		} 
-	} 
+	}
+	
 	if (!this.as) { 
 		var cZ = new google.maps.MarkerImage("images/pegman.png", new google.maps.Size(49, 52), new google.maps.Point(0, 0), new google.maps.Point(25, 36));
  		var ak = new google.maps.Marker({ position: pt, icon: cZ, map: map, draggable: true, zIndex: 10000 });
- 		google.maps.event.addListener(ak, "dragstart", function (a) { 
- 			if (dmap.F) { 
- 				pauseAnimation();
- 			} 
- 		});
- 		google.maps.event.addListener(ak, "drag", function (a) { 
- 			dmap.aC(a.latLng, false);
- 		});
- 		google.maps.event.addListener(ak, "dragend", function (a) { 
- 			dmap.aC(a.latLng, true);
- 		});
+ 		//google.maps.event.addListener(ak, "dragstart", function (a) { 
+ 		//	if (dmap.F) { 
+ 		//		pauseAnimation();
+ 		//	} 
+ 		//});
+ 		//google.maps.event.addListener(ak, "drag", function (a) { 
+ 		//	dmap.aC(a.latLng, false);
+ 		//});
+ 		//google.maps.event.addListener(ak, "dragend", function (a) { 
+ 		//	dmap.aC(a.latLng, true);
+ 		//});
  		this.as = ak;
  	} else { 
  		this.as.setPosition(pt);
@@ -1907,7 +1922,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
  		this.ae = J.distance / 2;
  		this.bB(av, J.bearing);
 		 if (dR && pan) { 
-			 pan.setPosition(av);
+			pan.setPosition(av);
  			pan.setPov({ heading: J.bearing, pitch: 0, zoom: this.streeViewZoom });
  		} 
 	} 
@@ -1961,7 +1976,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
 		 + "<li class=\"active\"><button type=\"button\" id='playButton' onclick='playAnimation()' class=\"btn btn-primary navbar-btn\">Start</button></li>"
 		 + "<li class=\"active\"><button type=\"button\" id='resetButton' onclick='resetDirections()' class=\"btn btn-danger navbar-btn\">Reset</button></li>"
 		 
-		 + "<li class=\"dropdown\"><a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\">Map Type<span class=\"caret\"></span></a>"
+		 + "<li class=\"dropdown\"><a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\"><span class=\"glyphicon glyphicon-globe\" aria-hidden=\"true\"></span> Map Type<span class=\"caret\"></span></a>"
          + "<ul class=\"dropdown-menu\">"
          + "<li><a href=\"#\" onClick=\"map.setMapTypeId('roadmap');\">Road</a></li>"
          + "<li><a href=\"#\" onClick=\"map.setMapTypeId('satellite');\">Satellite</a></li>"

@@ -8,6 +8,10 @@ import java.util.List;
 
 import com.cprasmu.picycle.model.chart.ChartSeries;
 import com.cprasmu.picycle.model.chart.DataSet;
+import com.cprasmu.picycle.model.gpx.GpxType;
+import com.cprasmu.picycle.model.gpx.TrkType;
+import com.cprasmu.picycle.model.gpx.TrksegType;
+import com.cprasmu.picycle.model.gpx.WptType;
 
 
 public class BikeJourney {
@@ -71,6 +75,30 @@ public class BikeJourney {
 	
 	public String toGPX() {
 		
+		/*
+		 * TODO: use GPX builder classes!!!
+		GpxType gpx = new GpxType();
+		TrkType track = new TrkType();
+		track.setName(getName());
+		track.setDesc("PiCycle Virtual Journey");
+		
+		TrksegType t = new TrksegType();
+		
+		
+		for (int idx=0; idx<data.size(); idx++) {
+			JourneyPoint jp = data.get(idx);
+			WptType w = new WptType();
+		
+			w.setLat(jp.getGeoPoint().getLat());
+			w.setLon(jp.getGeoPoint().getLng());
+			t.getTrkpt().add(w);
+		}
+		
+		track.getTrkseg().add(t);
+		gpx.getTrk().add(track);
+		*/
+		
+		
 		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 		
 		StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" ?>\r\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\">\r\n<trk>\r\n");
@@ -100,7 +128,7 @@ public class BikeJourney {
 	}
 	
 	public String toTCX() {
-		
+		//TODO:use schma classes!
 		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 		
 		StringBuffer sb = new StringBuffer("<TrainingCenterDatabase xmlns=\"http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2 http://www.garmin.com/xmlschemas/TrainingCenterDatabasev2.xsd\">\r\n");

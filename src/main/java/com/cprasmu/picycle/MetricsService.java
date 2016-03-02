@@ -28,7 +28,7 @@ import com.pi4j.wiringpi.GpioUtil;
 
 import javax.servlet.annotation.WebListener;
 
-//@WebListener()
+
 public class MetricsService  {
 
 	private Float deltaDistance = new Float(0);

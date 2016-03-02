@@ -71,7 +71,9 @@ public class Utils {
 	    }
 	    
 	    List<TrkType> tracks = gpx.getTrk();
-	    if (tracks.isEmpty()){
+	    
+	    if (tracks.isEmpty()) {
+	    	//if the track list is empty then try to build a track from a waypoint list
 	    	List<RteType> routes = gpx.getRte();
 	    	TrkType  t = new TrkType();
 	  	    
@@ -83,21 +85,14 @@ public class Utils {
 	  	        TrksegType e = new TrksegType();
 	  	        
 	  	        for (WptType waypoint : waypoints) {
-	  	        	
-	  	        	
 	  	        	e.getTrkpt().add(waypoint);
-	  	        	
-	  	        	waypoint.getLat();
-	  	        	
 	  	        }
 	  	        t.getTrkseg().add(e);
 	  	    }
 	    	tracks.add(t);
 	    	
 	    }
-	  //  for(TrkType track : tracks) {
-	 //       System.out.println(track.getName());
-	 //   }
+	    
 	    return tracks;
 	}
 	

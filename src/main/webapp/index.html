@@ -78,62 +78,7 @@
           });
         }
 	}
-	/* 
-	function PiLoc(obj) {  
-		this.a=obj.lat;
-		this.b=obj.lon;
-	}
 	
-	PiLoc.prototype.lat=function() {
-		return this.a;
-	};
-	PiLoc.prototype.lng=function() {
-		return this.b;
-	};
-	
-	PiLoc.prototype.equals=function(obj) {
-		
-		if (this.a==obj.a && this.b==obj.b){
-			return true;
-		}
-		return false;
-	};
-	
-	var _ = {};
-	
-	_.Ka=function(a,b,c){null!=b&&(a=Math.max(a,b));
-
-	null!=c&&(a=Math.min(a,c));
-
-	return a};
-
-	_.La=function(a,b,c){
-		c=c-b;
-
-		return((a-b)%c+c)%c+b};
-	
-		_.L=function(a,b,c){
-			if (a&&(a.lat||a.lng))try{Ub(a),b=a.lng,a=a.lat,c=!1}catch(d){_.yb(d)}a-=0;b-=0;c||(a=_.Ka(a,-90,90),180!=b&&(b=_.La(b,-180,180)));
-			this.lat=function(){
-				return a
-			};
-			this.lng=function(){
-				return b
-			}
-		};
-		_.Ma=function(a,b,c){return Math.abs(a-b)<=(c||1E-9)};
-		_.L.prototype.toString=function(){
-			return"("+this.lat()+", "+this.lng()+")"
-		};
-		_.L.prototype.toJSON=function(){return{lat:this.lat(),lng:this.lng()}};
-		_.L.prototype.j=function(a){
-			return a?_.Ma(this.lat(),a.lat())&&_.Ma(this.lng(),a.lng()):!1};
-		_.L.prototype.equals=_.L.prototype.j;
-		_.L.prototype.toUrlValue=function(a){
-			a = _.E(a)?a:6;
-			return Xb(this.lat(),a)+","+Xb(this.lng(),a)
-		};
-		*/
 	function DMap() { 
 		this.streeViewZoom = 1;
 		this.accelerationX	=0;
@@ -156,14 +101,14 @@
  		this.ai 			= 2;// mode or initial mode?
  		this.draggableRoute = false;//draggable route?
  		this.animationDelay = 2000;
- 		this.bq 			= 20;//not used now was step distance
+ 		//this.bq 			= 20;//not used now was step distance
  		this.mapZoom 		= 15;
  		this.directionsRenderer = null;
  		this.dirSvc 		= new google.maps.DirectionsService();
  		//this.cn 			= [];//not found
  		this.cd 			= null; // used once - directions
  		//this.cP 			= null;//not found
- 		this.dp 			= null;//not found
+ 	//	this.dp 			= null;//not found
  		this.startPanel 	= null;
  		this.mapPanel 		= null;
  		this.streetViewPanel= null;
@@ -172,16 +117,16 @@
  		this.directionsPanel= null;
  		this.waitPanel 		= null;
  		this.l 				= null;//location
- 		this.as 			= null;//marker
- 		this.bi 			= -1;//mode
+ 		this.marker 			= null;
+ 		this.mode 			= -1;
  		this.aI 			= 0;//index of leg position?
  		this.ae 			= 0;
  		this.V 				= [];//legs
  		this.ax;				//point
  		this.F 				= false;
  		this.bk 			= false;//isAnimating
- 		this.width 			= 0;//width
- 		this.height 		= 0;//height
+ 		this.width 			= 0;
+ 		this.height 		= 0;
  		this.elePan 		= null;
  		this.elevationData 	= [];
  		this.inclineData 	= [];
@@ -607,27 +552,27 @@
  };
  
  function setMode(a) { 
- 	if (a != dmap.bi) { 
- 		dmap.bi = a;
+ 	if (a != dmap.mode) { 
+ 		dmap.mode = a;
  		dmap.resizeElements();
  		//eid("dirlink").className = (a == 1) ? "mb1" : "mb0";
  		//eid("svlink").className = (a == 2) ? "mb1" : "mb0";
  		if (a == 0 || a == 1) { 
  			pauseAnimation();
- 			dmap.ap(false);
+ 			dmap.showPegman(false);
  		} 
  		if (a == 2) { 
  			if (!pan) { 
  				dmap.dA();
  			} 
- 			dmap.ap(true);
+ 			dmap.showPegman(true);
  		} 
  	} 
  };
  
  function resetDirections() { 
  	dmap.F = false;
- 	dmap.ap(false);
+ 	dmap.showPegman(false);
  	//if (dmap.O) { 
  	//	dmap.O.setMap(null);
  	//} 
@@ -766,6 +711,11 @@
 		 			if (pan) { 
 		 				pan.setPosition(dmap.l);
 		 				pan.setPov({ heading: v.bearing, pitch: 0, zoom: dmap.streeViewZoom });
+		 				pan.setVisible(Point2PointDistance(pan.location.latLng,dmap.l)<100);
+	
+		 				
+		 				//console.log(pan.location.description);
+		 				
 		 				dmap.bB(pt, v.bearing);
 		 			} 
 		 		} 
@@ -1326,10 +1276,10 @@ DMap.prototype.updateLoadGuage = function (load) {
  		//this.bH = parseInt(cz);
  		this.animationDelay = parseInt(cz);
  	} 
- 	var aQ = this.getUrlParam(params, "fs");
- 	if (aQ) { 
- 		this.bq = parseInt(aQ);
- 	} 
+ 	//var aQ = this.getUrlParam(params, "fs");
+ 	//if (aQ) { 
+ 	//	this.bq = parseInt(aQ);
+ 	//} 
  	var cp = this.getUrlParam(params, "z");
  	if (cp) { 
  		this.mapZoom = parseInt(cp);
@@ -1361,14 +1311,14 @@ DMap.prototype.updateLoadGuage = function (load) {
  		return;
  	} 
  	
- 	dmap.bq 			= parseInt(eid("stepText").value);
+ 	//dmap.bq 			= parseInt(eid("stepText").value);
  	dmap.animationDelay = parseInt(eid("intervalText").value);
  	dmap.mapZoom 		= parseInt(eid("zoomText").value);
  	
- 	if (dmap.bq > 0 && dmap.bq < 100000000) { 
- 	} else { 
- 		dmap.bq = 20;
- 	} 
+ 	//if (dmap.bq > 0 && dmap.bq < 100000000) { 
+ 	//} else { 
+ 	//	dmap.bq = 20;
+ 	//} 
 
  	if (dmap.animationDelay >= 100 && dmap.animationDelay < 60000) { 
  	} else { 
@@ -1547,10 +1497,11 @@ DMap.prototype.updateLoadGuage = function (load) {
 		 	if (true) { 
 		 		me.bB(dmap.l, dmap.V[0].bearing);
 		 	} 
-		 	if (me.bi == 2 && pan) { 
+		 	if (me.mode == 2 && pan) { 
 		 		var v = me.V[0];
 		 		pan.setPosition(me.l);
 		 		pan.setPov({ heading: v.bearing, pitch: 0, zoom: dmap.streeViewZoom });
+		 		pan.setVisible(Point2PointDistance(pan.location.latLng,dmap.l)<100);
 		 		dmap.bB(me.l, v.bearing);
 		 	} 
 		 	
@@ -1613,7 +1564,7 @@ DMap.prototype.updateLoadGuage = function (load) {
  	if (cv) { 
  		this.bB(dmap.l, dmap.V[0].bearing);
  	} 
- 	if (this.bi == 2 && pan) { 
+ 	if (this.mode == 2 && pan) { 
  		var v = this.V[0];
  		pan.setPosition(this.l);
  		pan.setPov({ heading: v.bearing, pitch: 0, zoom: dmap.streeViewZoom });
@@ -1696,7 +1647,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
 	var barHeight = 50;
 	var L = barHeight + 150;
 	
- 	if (this.bi == 0) { 
+ 	if (this.mode == 0) { 
  		var ht = this.height;
  		var ht1 = parseInt((this.height - L + 1) / 2);
  		var wd = this.width;
@@ -1708,7 +1659,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
  		this.t(this.waitPanel, false, 0, 0, wd, ht1);
  		this.t(this.elePan, false, 0, 0, 0, wd, ht1);
  		
- 	} else if (this.bi == 3) { 
+ 	} else if (this.mode == 3) { 
  		var ht = this.height;
  		var ht1 = parseInt((this.height - L + 1) / 2);
  		var wd = this.width;
@@ -1731,14 +1682,14 @@ DMap.prototype.resizeElementsOrig = function (a) {
  		//this.t(this.headerPanel, true, 0, 0, wd, L-150);
  		this.t(this.headerPanel, true, 0, 0, wd,barHeight);
  		
- 		this.t(this.directionsPanel, this.bi == 1, 0, y1, wd, ht);
- 		//this.t(this.streetViewPanel, this.bi == 2, 0, y1, wd, ht);
+ 		this.t(this.directionsPanel, this.mode == 1, 0, y1, wd, ht);
+ 		//this.t(this.streetViewPanel, this.mode == 2, 0, y1, wd, ht);
  	//	this.t(this.mapPanel, true, 0, y2, wd, ht);
  		this.t(this.waitPanel    , false, 0, 0,  wd, ht);
 	//	this.tt(this.elePan, true , 0, 30, 100, ht/2);
 	
 		this.tt(this.elePan, true , 0, barHeight , 100, ht);
-		this.t(this.streetViewPanel, this.bi == 2, 0, barHeight + ht, wd, ht);
+		this.t(this.streetViewPanel, this.mode == 2, 0, barHeight + ht, wd, ht);
  		this.t(this.mapPanel, true,                0, barHeight + (ht*2),  wd, ht);
  		
  	} 
@@ -1766,7 +1717,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
 	var barHeight = 50;
 	var L = barHeight + 150;
 	
- 	if (this.bi == 0) { 
+ 	if (this.mode == 0) { 
  		var ht = this.height;
  		var ht1 = parseInt((this.height - L + 1) / 2);
  		var wd = this.width;
@@ -1779,7 +1730,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
  		this.t(this.metaPanel, false, 0, 0, wd, ht1);
  		this.t(this.elePan, false, 0, 0, 0, wd, ht1);
  		
- 	} else if (this.bi == 3) { 
+ 	} else if (this.mode == 3) { 
  		var ht = this.height;
  		var ht1 = parseInt((this.height - L + 1) / 2);
  		var wd = this.width;
@@ -1803,14 +1754,14 @@ DMap.prototype.resizeElementsOrig = function (a) {
  		//this.t(this.headerPanel, true, 0, 0, wd, L-150);
  		this.t(this.headerPanel, true, 0, 0, wd,barHeight);
  		
- 		this.t(this.directionsPanel, this.bi == 1, 0, y1, wd, ht);
- 		//this.t(this.streetViewPanel, this.bi == 2, 0, y1, wd, ht);
+ 		this.t(this.directionsPanel, this.mode == 1, 0, y1, wd, ht);
+ 		//this.t(this.streetViewPanel, this.mode == 2, 0, y1, wd, ht);
  	//	this.t(this.mapPanel, true, 0, y2, wd, ht);
  		this.t(this.waitPanel    , false, 0, 0,  wd, ht);
 	//	this.tt(this.elePan, true , 0, 30, 100, ht/2);
 	
 		this.tt(this.elePan, true , 0, barHeight , 100, ht);
-		this.t(this.streetViewPanel, this.bi == 2, 0, barHeight + ht, wd, ht);
+		this.t(this.streetViewPanel, this.mode == 2, 0, barHeight + ht, wd, ht);
  		this.t(this.mapPanel, true,                0, barHeight + (ht*2),  wd/2, ht);
  		this.t(this.metaPanel, true,   wd/2, barHeight + (ht*2),  wd/2, ht);
  		
@@ -1991,11 +1942,11 @@ DMap.prototype.resizeElementsOrig = function (a) {
  };
  */
  var pandas = [];
- DMap.prototype.ap = function (a) { 
-	if (this.as) { 
-		 this.as.setVisible(a);
+ DMap.prototype.showPegman = function (visible) { 
+	if (this.marker) { 
+		 this.marker.setVisible(visible);
  	} 
-};
+ };
  
  DMap.prototype.bB = function (pt, df) { 
 	
@@ -2006,9 +1957,9 @@ DMap.prototype.resizeElementsOrig = function (a) {
  		} 
 	}
 	
-	if (!this.as) { 
+	if (!this.marker) { 
 		var cZ = new google.maps.MarkerImage("images/pegman.png", new google.maps.Size(49, 52), new google.maps.Point(0, 0), new google.maps.Point(25, 36));
- 		var ak = new google.maps.Marker({ position: pt, icon: cZ, map: map, draggable: true, zIndex: 10000 });
+ 		//var ak = new google.maps.Marker({ position: pt, icon: cZ, map: map, draggable: true, zIndex: 10000 });
  		//google.maps.event.addListener(ak, "dragstart", function (a) { 
  		//	if (dmap.F) { 
  		//		pauseAnimation();
@@ -2020,13 +1971,13 @@ DMap.prototype.resizeElementsOrig = function (a) {
  		//google.maps.event.addListener(ak, "dragend", function (a) { 
  		//	dmap.aC(a.latLng, true);
  		//});
- 		this.as = ak;
+ 		this.marker = new google.maps.Marker({ position: pt, icon: cZ, map: map, draggable: true, zIndex: 10000 });
  	} else { 
- 		this.as.setPosition(pt);
+ 		this.marker.setPosition(pt);
  	} 
-	this.as.setVisible(this.bi == 2 ? true : false);
+	this.marker.setVisible(this.mode == 2 ? true : false);
  	var n = Math.round(df / 22.5) % 16;
- 	this.as.setIcon(pandas[n]);
+ 	this.marker.setIcon(pandas[n]);
  };
  
  DMap.prototype.aC = function (pt, dR) { 
@@ -2216,7 +2167,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
  		eid("draggableRouteBox").checked = true;
  	}
  	
- 	eid("stepText").value 	= this.bq;
+ 	//eid("stepText").value 	= this.bq;
  	eid("intervalText").value = this.animationDelay;
  	eid("zoomText").value 	= this.mapZoom;
  	initAutocomplete();

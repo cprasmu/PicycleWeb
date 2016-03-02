@@ -1,5 +1,6 @@
 package com.cprasmu.picycle.resteasy;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -28,6 +29,7 @@ import com.cprasmu.picycle.model.ConsumeDeltaResponse;
 import com.cprasmu.picycle.model.ElevationPoint;
 import com.cprasmu.picycle.model.Location;
 import com.cprasmu.picycle.model.chart.DataSet;
+import com.cprasmu.picycle.model.gpx.TrkType;
 
 
 @Path("/api")
@@ -110,6 +112,23 @@ public class ApiService {
 	    return MetricsService.getInstance().getCurrentBikeJourney().getSeries("callbackDunctionName") ;
 	    
 	}
+	
+	@GET
+	@Path("/import/gpx/{filename}")
+	@Produces("application/json")
+	public List<TrkType> parseGPX(@PathParam("filename")String filename){
+	    return Utils.parseGPX(filename) ;
+	    
+	}
+	
+	@GET
+	@Path("/list/files/gpx")
+	@Produces("application/json")
+	public List<File> getGPXFiles(){
+	    return Utils.getGPXFiles() ;
+	    
+	}
+	
 	
 	@POST
 	@Path("/journeys")

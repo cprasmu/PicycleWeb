@@ -222,6 +222,7 @@ public class MetricsService  {
 		return result;		
 		
 	}
+	
 	private double calculatePower(double x){
 		
 		double result;

@@ -1,9 +1,12 @@
 package com.cprasmu.picycle;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 
 import javax.servlet.ServletContextEvent;
@@ -33,16 +36,17 @@ public class MetricsService  {
 
 	private Float deltaDistance = new Float(0);
 	private Float totalDistance = new Float(0);
-	private Float wheelDiameter = 2.08f;
+	//private Float wheelDiameter = 2.08f;
+	private Float wheelDiameter = 2.02f;
 	private Float wheelCadence = new Float(0);
 	
-	private double cadence	 	= new Double(0);
-	private boolean tripStarted = false;
-	private long lastWheelTime=0;
-	private double altitude = 0;
-	private long pulseCount=0;
+	private double 	cadence	 	= new Double(0);
+	//private boolean tripStarted = false;
+	private long 	lastWheelTime 	= 0;
+	private double 	altitude 		= 0;
+	//private long 	pulseCount 		= 0;
 	private ArrayList<Float> speedList = new ArrayList<Float>(3);
-	private boolean keepRunning = true;
+	private boolean keepRunning 	= true;
 	private static final int pwmFreq = 50;
 	private static final int servoChan = 0;
 	private final GpioController gpio = GpioFactory.getInstance();
@@ -54,20 +58,41 @@ public class MetricsService  {
 	private static final int PWM_MFACTOR = 60;
 	//private float maxMagLoad = 5.0f;
 	private boolean ioinit =  false;
-	private double maxSpeed=0;
-	private double aveSpeed=0;
+	private double maxSpeed = 0;
+	private double aveSpeed = 0;
 			
 	public static final int NOT_SET = Integer.MIN_VALUE;
 	private long lastSpin, spinDiff,thisSpin=System.currentTimeMillis();
     //method timer variables
     private long timerStart, timerFinish, timerDiff, totalTimes, numTimes=0, maxTime;
     private final long MILLISECONDS_PM = 60000;
-    
+    private Timer sender  = null;
     
     private ArrayList<BikeJourney>journeys = new ArrayList<>();
     BikeJourney currentJourney = new BikeJourney();
 
 	private PWMDevice.PWMChannel servo0;
+	
+	
+	
+	private class PulseCheckerTask extends TimerTask {
+		
+        public void run() {
+        	if ((System.currentTimeMillis() - lastWheelTime)>2000 ) {
+        		speedList.add(0f);
+        		
+				if (speedList.size()>3) {
+					speedList.remove(0);
+				}
+        	}
+        	
+        	if ((System.currentTimeMillis() -lastSpin)>2000) {
+        		cadence = 0d;
+        		
+        	}
+        }
+    }
+	
 	
 	private void resetGPIO() {
 		
@@ -96,9 +121,9 @@ public class MetricsService  {
 		//TODO: refactor this to a request object?
 		response.setPwmLoad(PWM_START + (int)((load-1) * PWM_MFACTOR));
 		setPwmLoad(PWM_START + (int)((load-1) * PWM_MFACTOR));
-		try{
+		try {
 			currentJourney.getData().get(currentJourney.getData().size()-1).setLoad(load);
-		}catch(Exception ex){
+		} catch(Exception ex) {
 			System.out.println("Failed to set load for journeyPoint");
 		}
 		
@@ -127,11 +152,11 @@ public class MetricsService  {
 		
 		deltaDistance = new Float(0);
 		totalDistance = new Float(0);
-		wheelCadence = new Float(0);
+		wheelCadence  = new Float(0);
 		lastWheelTime = System.currentTimeMillis();
 		
-		tripStarted = false;
-		maxSpeed=0;
+	//	tripStarted = false;
+		maxSpeed 	 = 0;
 	}
 	
 	public void setAltitude(double altitude){
@@ -240,11 +265,17 @@ public class MetricsService  {
 		
 	}
 	
+	public void finaliseJourney() {
+		
+		getCurrentBikeJourney().transferToDropBox();
+		resetTrip();
+		
+	}
 	
 	private MetricsService() {
 		
 		
-		GpioUtil.enableNonPrivilegedAccess();
+		//GpioUtil.enableNonPrivilegedAccess();
 		System.out.println("###################### MetricsService created ######################");
 		
 		deltaDistance = new Float(0);
@@ -294,7 +325,8 @@ public class MetricsService  {
         };
 
         logger.start();
-		
+    	sender = new Timer("Pulse Checker",true); 
+    	sender.schedule(new PulseCheckerTask(), 2000,2000);
 	}
 	
 	public void setKeepRunning(boolean keepRunning){
@@ -309,26 +341,33 @@ public class MetricsService  {
 	    return SingletonHolder.INSTANCE;
 	}
 	
-	public synchronized long wheelPulse() {
+	public synchronized void wheelPulse() {
 		
-		synchronized (deltaDistance) {
-			deltaDistance += wheelDiameter;
-			totalDistance += wheelDiameter;
-			pulseCount++;
+	//	synchronized (deltaDistance) {
+			
+			
+			//pulseCount++;
 			
 			long timeDiff = System.currentTimeMillis() - lastWheelTime;
 			
-			System.out.println("Speed : " + (wheelDiameter/(timeDiff/1000f))*2.25);
-			
-			wheelCadence = (float)(System.currentTimeMillis() - lastWheelTime)/1000f;
-			lastWheelTime = System.currentTimeMillis();
-			speedList.add((wheelDiameter/wheelCadence * 2.25f));
-			
-			if (speedList.size()>5) {
-				speedList.remove(0);
+			if (timeDiff>50) {
+				deltaDistance += wheelDiameter;
+				totalDistance += wheelDiameter;
+				
+				System.out.println("Speed : " + ((wheelDiameter/(timeDiff/1000f))*2.25) + ("\t" + timeDiff));
+				
+				wheelCadence = (float)(System.currentTimeMillis() - lastWheelTime)/1000f;
+				lastWheelTime = System.currentTimeMillis();
+				speedList.add((wheelDiameter/wheelCadence * 2.25f));
+				
+				if (speedList.size()>3) {
+					speedList.remove(0);
+				}
+			} else {
+				//invalid gate time
 			}
-			return pulseCount;
-		}
+			//return pulseCount;
+	//	}
 		
 	}
 	
@@ -340,7 +379,7 @@ public class MetricsService  {
 		
 		if (speedList.size()==0) return 0;
 		
-		for (int i=0;i<speedList.size();i++){
+		for (int i=0;i<speedList.size();i++) {
 			total += speedList.get(i);
 		}
 		
@@ -349,15 +388,15 @@ public class MetricsService  {
 		if (result>maxSpeed){
 			maxSpeed = result;
 		}
-		
-		
-		
+
 		return (total/speedList.size());
 		
 	}
 	
 	public double getMaxSpeedMPH() {
+		
 		return maxSpeed;
+		
 	}
 	
 	public double getAveSpeedMPH() {
@@ -378,7 +417,7 @@ public class MetricsService  {
 		return aveSpeed;
 	}
 	
-	public synchronized void crankPulse(){
+	public synchronized void crankPulse() {
 		
         //start timer
 		if ((System.currentTimeMillis()-timerFinish)<100){
@@ -387,7 +426,7 @@ public class MetricsService  {
 		}
         timerStart = System.currentTimeMillis();
        
-        double rpm = 0;
+       // double rpm = 0;
         //lastSpin should be what thisSpin was assigned last time
         lastSpin = thisSpin;
         //thisSpin should be the current time
@@ -413,7 +452,7 @@ public class MetricsService  {
  
     }
 	
-	
+	/*
 	public Float consumeDelta1(double lat,double lng) {
 		
 		synchronized (deltaDistance) {
@@ -442,13 +481,13 @@ public class MetricsService  {
 			
 		}
 	}
-	
+	*/
 	
 	public ConsumeDeltaResponse consumeDelta(double lat,double lng){
 
 		ConsumeDeltaResponse response = new ConsumeDeltaResponse();
 		
-		synchronized (deltaDistance) {
+	//	synchronized (deltaDistance) {
 			
 			JourneyPoint jp = new JourneyPoint();
 			jp.setTime(System.currentTimeMillis());
@@ -479,17 +518,21 @@ public class MetricsService  {
 			response.setPower(jp.getPower());
 			
 			deltaDistance = 0f;
-		}
+	//	}
 		
 		
 		return response;
 	}
 	
-	public BikeJourney getCurrentBikeJourney(){
-		return currentJourney;
-	}
 	
-	public static void writeFile(String line)  {
+	
+	public BikeJourney getCurrentBikeJourney() {
+		
+		return currentJourney;
+		
+	}
+	/*
+	public static void writeFile(String line) {
 		
 		FileWriter fw;
 		
@@ -504,6 +547,7 @@ public class MetricsService  {
 		}
 		
 	}
+	*/
 	
 	public double getTotalDistance() {
 		
@@ -511,22 +555,25 @@ public class MetricsService  {
 	}
 	
 	public double getCadence() {
+		
 		return cadence;
+		
 	}
 	
 	public long getTripTime() {
+		//TODO: return actual time and cal trip time in app,
 		return System.currentTimeMillis() - currentJourney.getStartDate();
 		
 	}
 	
 	public void reset() {
 		
-		pulseCount=0;
-		deltaDistance=0f;
-		totalDistance=0f;
-		tripStarted = false;
-		aveSpeed=0;
-		maxSpeed=0;
+		//pulseCount=0;
+		deltaDistance = 0f;
+		totalDistance = 0f;
+	//	tripStarted = false;
+		aveSpeed = 0;
+		maxSpeed = 0;
 	}
 	
 	public void start(String journeyName) {
@@ -537,7 +584,7 @@ public class MetricsService  {
 		
 		journeys.add(currentJourney);
 		
-		tripStarted = true;
+		//tripStarted = true;
 	
 	}
 	

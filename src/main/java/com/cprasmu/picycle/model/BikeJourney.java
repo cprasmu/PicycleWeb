@@ -1,17 +1,24 @@
 package com.cprasmu.picycle.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import com.cprasmu.picycle.dropBox.DropBox;
 import com.cprasmu.picycle.model.chart.ChartSeries;
 import com.cprasmu.picycle.model.chart.DataSet;
 import com.cprasmu.picycle.model.gpx.GpxType;
 import com.cprasmu.picycle.model.gpx.TrkType;
 import com.cprasmu.picycle.model.gpx.TrksegType;
 import com.cprasmu.picycle.model.gpx.WptType;
+import com.dropbox.core.DbxException;
+import com.dropbox.core.v2.files.UploadErrorException;
 
 
 public class BikeJourney {
@@ -97,14 +104,19 @@ public class BikeJourney {
 		track.getTrkseg().add(t);
 		gpx.getTrk().add(track);
 		*/
-		
-		
 		SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
 		
-		StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" ?>\r\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\">\r\n<trk>\r\n");
+		String ts =  fmt.format(new Date());
+		
+		
+		StringBuffer sb = new StringBuffer("<?xml version=\"1.0\" ?>\r\n");
+		
+		sb.append("<gpx version=\"1.1\" creator=\"PiCycle\" xmlns=\"http://www.topografix.com/GPX/1/1\">\r\n");
+		sb.append("<metadata><time>" + ts + "</time></metadata>\r\n");
+		sb.append("<trk>\r\n");
 		sb.append("<name>" + getName() + "</name>\r\n");
 		sb.append("<desc>PiCycle Virtual Journey</desc>\r\n");
-		sb.append("<time>"+fmt.format(new Date())+"</time>\r\n");
+		sb.append("<time>" + ts + "</time>\r\n");
 		sb.append("<trkseg>\r\n");
 		
 		//for (JourneyPoint jp:data) {
@@ -123,8 +135,32 @@ public class BikeJourney {
 		
 		sb.append("</trkseg>\r\n</trk>\r\n</gpx>");
 		
+		
 		return sb.toString();
 		
+	}
+	
+	public void transferToDropBox() {
+		try {
+			String filename = getName();
+			
+			if(!filename.endsWith(".gpx")){
+				filename+= ".gpx";
+			}
+			DropBox.transfer(filename,getInputStream());
+		} catch ( IOException | DbxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private InputStream getInputStream() throws UnsupportedEncodingException {
+		
+			ByteArrayInputStream bais = new ByteArrayInputStream(this.toGPX().getBytes("UTF-8"));
+			
+			return bais;
+
+
 	}
 	
 	public String toTCX() {

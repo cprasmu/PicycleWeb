@@ -2,9 +2,10 @@
 <link rel="shortcut icon" href="favicon.ico">
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" >
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 <script src="https://code.highcharts.com/stock/highstock.js"></script>
 <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
 <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
@@ -13,6 +14,30 @@
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyDVyQlW4jGu8DKHMBRzKdXS1xSyhlk2jr4&signed_in=true&libraries=places"></script>
 <!--script type="text/javascript" src="http://maps.google.com/maps/api/js?signed_in=true&libraries=places"></script-->
 <!--script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDVyQlW4jGu8DKHMBRzKdXS1xSyhlk2jr4&signed_in=true&libraries=places&callback=initAutocomplete" async defer></script-->
+<!--script src="javascript/bootstrap.min.js"></script-->
+<!--script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=geometry"></script-->
+<script src="javascript/jquery.bootgrid.min.js"></script>
+<script src="javascript/date.format.js"></script>
+<script src="javascript/filesize.min.js"></script>
+<link href="css/jquery.bootgrid.css" rel="stylesheet">
+
+<style type="text/css">
+    .bgColumnModified
+    {
+        width: 160px;
+    }
+    
+    .bgColumnSize
+    {
+        width: 100px;
+    }
+    
+    .bgColumnCommands
+    {
+        width: 100px;
+    }
+    
+</style>
 <script type="text/javascript">
 
 	var dmap = null;
@@ -121,9 +146,9 @@
  		this.mode 			= -1;
  		this.aI 			= 0;//index of leg position?
  		this.ae 			= 0;
- 		this.V 				= [];//legs
+ 		this.routeLegs 				= [];//legs
  		this.ax;				//point
- 		this.F 				= false;
+ 		this.isRunning 		= false;
  		this.bk 			= false;//isAnimating
  		this.width 			= 0;
  		this.height 		= 0;
@@ -131,6 +156,7 @@
  		this.elevationData 	= [];
  		this.inclineData 	= [];
  		this.chart			= null;
+ 		this.pitch 			= 0;
  		this.currentDirections = null;
  		this.journeyName	= null;
  		
@@ -341,7 +367,7 @@
  		};
 
  		// Apply the theme
- 		Highcharts.setOptions(Highcharts.theme);
+ 	//	Highcharts.setOptions(Highcharts.theme);
  		
  		
  		this.chartOptions = {chart:{animation:false,   defaultSeriesType:"area",  ignoreHiddenSeries:false,  backgroundColor:"#262528", margin:[30,0,30,0], spacingTop:3, spacingRight:0, events:{}  },  
@@ -352,7 +378,7 @@
      //			{name:"Power",color:"#ffff4d",type:["line"],data:{},shadow:true}
     // 	],
      	loading:{labelStyle:{color:"white"},style:{backgroundColor:"#262528"} },
-     	navigator:{adaptToUpdatedData:false,margin:20,enabled:true,
+     	navigator:{adaptToUpdatedData:true,margin:20,enabled:true,
      		  		xAxis:{labels:{enabled:false},
      		  				lineWidth:0,
      		  				gridLineWidth:0,
@@ -399,12 +425,32 @@
      				dateTimeLabelFormats:{	second:"%H:%M:%S",minute:"%H:%M",hour:"%H:%M",day:"%H:%M",week:"%H:%M",month:"%H:%M",year:"%H:%M"},
      				labels:{y:25}
       			},
-     		yAxis:{	endOnTick:false,
+     		yAxis:[{	endOnTick:false,
      				plotLines:[{color:"#929293",width:2}],
      				title:{text:""},
      				gridLineColor:"#4D4D4D",
      				labels:{style:{fontWeight:"bold",fontSize:"11px",color:"#999999"}}
-     				},
+     				},{	endOnTick:false,
+         				plotLines:[{color:"#929293",width:2}],
+         				title:{text:""},
+         				gridLineColor:"#4D4D4D",
+         				labels:{style:{fontWeight:"bold",fontSize:"11px",color:"#999999"}}
+         				},{	endOnTick:false,
+             				plotLines:[{color:"#929293",width:2}],
+             				title:{text:""},
+             				gridLineColor:"#4D4D4D",
+             				labels:{style:{fontWeight:"bold",fontSize:"11px",color:"#999999"}}
+             				},{	endOnTick:false,
+                 				plotLines:[{color:"#929293",width:2}],
+                 				title:{text:""},
+                 				gridLineColor:"#4D4D4D",
+                 				labels:{style:{fontWeight:"bold",fontSize:"11px",color:"#999999"}}
+                 				},{	endOnTick:false,
+                     				plotLines:[{color:"#929293",width:2}],
+                     				title:{text:""},
+                     				gridLineColor:"#4D4D4D",
+                     				labels:{style:{fontWeight:"bold",fontSize:"11px",color:"#999999"}}
+                     				}],
      		rangeSelector:{enabled:false},
      		tooltip:{crosshairs:[{zIndex:4}]},
      		legend:{align:"right",
@@ -563,7 +609,7 @@
  		} 
  		if (a == 2) { 
  			if (!pan) { 
- 				dmap.dA();
+ 				dmap.setupStreetview();
  			} 
  			dmap.showPegman(true);
  		} 
@@ -571,11 +617,11 @@
  };
  
  function resetDirections() { 
- 	dmap.F = false;
+ 	dmap.isRunning = false;
  	dmap.showPegman(false);
- 	//if (dmap.O) { 
- 	//	dmap.O.setMap(null);
- 	//} 
+   
+ 	
+ 	
  	if (dmap.directionsRenderer) { 
  		dmap.directionsRenderer.setMap(null);
  	} 
@@ -585,7 +631,7 @@
  };
  
  function pauseAnimation() { 
- 	if (dmap.bk && dmap.F) { 
+ 	if (dmap.bk && dmap.isRunning) { 
  		playAnimation();
  	} 
  };
@@ -597,10 +643,10 @@
  		setMode(2);
  		dmap.cc();
  	} else { 
- 		dmap.F = !dmap.F;
- 		eid("playButton").value = dmap.F ? "Pause" : "Play";
- 		$("#playButton").text(dmap.F ? "Pause" : "Play");
- 		if (dmap.F) { 
+ 		dmap.isRunning = !dmap.isRunning;
+ 		eid("playButton").value = dmap.isRunning ? "Pause" : "Play";
+ 		$("#playButton").text(dmap.isRunning ? "Pause" : "Play");
+ 		if (dmap.isRunning) { 
  			if (map) { 
  				map.setCenter(dmap.l);
  				if (dmap.aI == 0) { 
@@ -617,9 +663,15 @@
  	playAnimation();
  };
  
+ function destinationReached() {
+	 callAjax("services/api/dropbox",function(){
+		 
+	 });
+ }
+ 
  function getIncrementFromBike() {
 		 
-		 if (dmap.F) { 
+		 if (dmap.isRunning) { 
 			 
 			 //get delta from bike plus all other meta fields
 			 callAjax("services/api/consumeDelta/"+ dmap.l.lat() + "/"+ dmap.l.lng(), function(response) {
@@ -644,56 +696,60 @@
 		 		
 		 		
 		 		var rowPos  = Math.round((response.totalDistance / dmap.currentDirections.routes[0].legs[0].distance.value) * dmap.inclineData.length);
-		 		var curGrad = dmap.inclineData[rowPos];
 		 		
-		 		//dmap.chart.series[2].setData([2,2,3,4,5])//
-		 		dmap.chart.series[0].addPoint([response.time, Math.floor(dmap.elevationData[rowPos][1])],false,false);
-		 		dmap.chart.series[1].addPoint([response.time, curGrad[1]],false,false);
-		 		dmap.chart.series[2].addPoint([response.time, response.speed],false,false);
-		 		dmap.chart.series[3].addPoint([response.time, response.cadence],false,false);
-		 		dmap.chart.series[4].addPoint([response.time, Math.floor(response.power)],false,false);
-		 		dmap.chart.redraw();
-		 		
-		 		var altitude = dmap.elevationData[rowPos];
-		 		
-		 		// callAjax("api2/bike?load="+ (3+(curGrad[1]/8)).toFixed(1) + "&altitude=" + altitude, function(response1){
-		 		 if (dK>0) {
-			 		callAjax("services/api/bikeLoad/"+ (3+(curGrad[1]/8)).toFixed(1) + "/" + altitude[1], function(response) {
-			 			
-			 			var resp = JSON.parse(response);
-			 			dmap.updateLoadGuage(resp.load);
-			 			// console.log(response);
-			 		 });
-		 		 }
-		 		
-		 	
+		 		if (rowPos < dmap.inclineData.length) {
+			 		var curGrad = dmap.inclineData[rowPos];
+			 		dmap.pitch =  curGrad[1]/(-3);
+			 		//dmap.chart.series[2].setData([2,2,3,4,5])//
+			 		eraseEarly = false;//(dmap.chart.series[0].data.length > 100);
+			 		
+			 		dmap.chart.series[0].addPoint([response.time, Math.floor(dmap.elevationData[rowPos][1])],false,eraseEarly);
+			 		dmap.chart.series[1].addPoint([response.time, curGrad[1]],false,eraseEarly);
+			 		dmap.chart.series[2].addPoint([response.time, response.speed],false,eraseEarly);
+			 		dmap.chart.series[3].addPoint([response.time, response.cadence],false,eraseEarly);
+			 		dmap.chart.series[4].addPoint([response.time, Math.floor(response.power)],false,eraseEarly);
+			 		dmap.chart.redraw();
+			 		
+			 		var altitude = dmap.elevationData[rowPos];
+			 		
+			 		// callAjax("api2/bike?load="+ (3+(curGrad[1]/8)).toFixed(1) + "&altitude=" + altitude, function(response1){
+			 		if (dK>0) {
+				 		callAjax("services/api/bikeLoad/"+ (3+(curGrad[1]/8)).toFixed(1) + "/" + altitude[1], function(response) {
+				 			
+				 			var resp = JSON.parse(response);
+				 			dmap.updateLoadGuage(resp.load);
+				 			// console.log(response);
+				 		 });
+			 		}
+		 		}
 		 		
 		 		dmap.ae += dK;
 		 		
-		 		var v = dmap.V[dmap.aI];
+		 		var v = dmap.routeLegs[dmap.aI];
 		 		
 		 		while (v && dmap.ae >= v.distance) { 
 		 			dmap.ae -= v.distance;
 		 			dmap.aI++;
 		 			
-		 			if (dmap.aI < dmap.V.length) { 
-		 				v = dmap.V[dmap.aI];
+		 			if (dmap.aI < dmap.routeLegs.length) { 
+		 				v = dmap.routeLegs[dmap.aI];
 		 				
 		 			} else { 
-		 				v = dmap.V[dmap.V.length - 1];
+		 				v = dmap.routeLegs[dmap.routeLegs.length - 1];
 		 				dmap.l = v.end;
 		 				map.setCenter(v.end);
 		 				if (pan) { 
 		 					pan.setPosition(dmap.l);
-		 					pan.setPov({ heading: v.bearing, pitch: 0, zoom: dmap.streeViewZoom });
-		 					dmap.bB(dmap.l, v.bearing);
+		 					pan.setPov({ heading: v.bearing, pitch: dmap.pitch, zoom: dmap.streeViewZoom });
+		 					dmap.updateMarker(dmap.l, v.bearing);
 		 				} 
 		 				eid("playButton").value = "Play";
 		 				$("#playButton").text("Play")
-		 				dmap.F = false;
+		 				dmap.isRunning = false;
 		 				dmap.aI = 0;
 		 				dmap.ae = 0;
 		 				v = null;
+		 				destinationReached();
 		 			} 
 		 		} 
 		 		
@@ -710,13 +766,13 @@
 		 			map.setCenter(dmap.l);
 		 			if (pan) { 
 		 				pan.setPosition(dmap.l);
-		 				pan.setPov({ heading: v.bearing, pitch: 0, zoom: dmap.streeViewZoom });
+		 				pan.setPov({ heading: v.bearing, pitch: dmap.pitch, zoom: dmap.streeViewZoom });
 		 				pan.setVisible(Point2PointDistance(pan.location.latLng,dmap.l)<100);
 	
 		 				
 		 				//console.log(pan.location.description);
 		 				
-		 				dmap.bB(pt, v.bearing);
+		 				dmap.updateMarker(pt, v.bearing);
 		 			} 
 		 		} 
 		 		
@@ -773,11 +829,12 @@
 	    }
 	 
 }
- function getElevationForPath(polyline,callbackFn,distanceKM,journeyName){
+/*
+function getElevationForPath(polyline,callbackFn,distanceKM,journeyName){
 	
 		var ELEVATION_BASE_URL = "api2/Elevation";
 		var pathStr  = "enc:" + polyline;
-		var samples = 200;
+		var samples = 500;
 		var distanceUnit = (distanceKM / samples) * 0.621371;
 		var elvtn_args={};
 		elvtn_args.samples 	= samples;
@@ -823,8 +880,53 @@
 			callbackFn(results);
 		});
 };
+*/
+function getElevationForPath(polyline, callbackFn, distanceKM, journeyName){
+	
+	var ELEVATION_BASE_URL = "services/api/elevation";
+	var pathStr  = "enc:" + polyline;
+	var samples = 500;
+	var distanceUnit = (distanceKM / samples) * 0.621371;
+	var elvtn_args={};
+	var chartResults =[];
+	
+	elvtn_args.samples 	= samples;
+	elvtn_args.path 	= pathStr;
+	elvtn_args.key 		= "AIzaSyDVyQlW4jGu8DKHMBRzKdXS1xSyhlk2jr4";//not needed!
+	elvtn_args.journeyName = encodeURIComponent(journeyName) ;
+	url = ELEVATION_BASE_URL;
 
+	postAjax(url,JSON.stringify(elvtn_args) ,function(results) {
 
+		var elevationArray = [];
+		var inclineArray = [];
+	
+		for (var x=0;x< results.length;x++){
+			
+			if (x>0) {
+				
+				var vc = ( results[x].elevation- results[x-1].elevation ) * 3.28084;
+				
+				var gc = (vc / (distanceUnit *3.3) * 100);
+				inclineArray.push([(x*distanceUnit/1000).toFixed(2) ,gc]);
+				
+				elevationArray.push([(x*distanceUnit/1000).toFixed(2) ,(results[x].elevation * 3.28084)]);
+			} else {
+	
+				elevationArray.push([(x*distanceUnit/1000).toFixed(2),(results[x].elevation * 3.28084) ]);
+				inclineArray.push([(x*distanceUnit/1000).toFixed(2) ,0]);
+			}
+	
+		}
+
+		//callbackFn(getChart(elevationArray));
+		dmap.elevationData = elevationArray;
+		dmap.inclineData = inclineArray;
+		chartResults.push(elevationArray);
+		chartResults.push(inclineArray);
+		callbackFn(chartResults);
+	});
+};
  
  DMap.prototype.initGryo = function() { 
 	 
@@ -912,13 +1014,13 @@
         }},
         */
         
-        this.chartOptions.series = [{name:"Altitude", type:["area"], data:data[0], dataGrouping:{smoothed:false},tooltip: {
-            valueSuffix: ' ft'
-        }},
-		{name:"Incline", color:"#00FF00", type:["line"], data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' %' }}, 
-		{name:"Speed",color:"#ff0000", type:["line"], data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' Mph' }}, 
-		{name:"Cadence",color:"#ffffff",type:["line"],data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' Rpm' }}, 
-		{name:"Power",color:"#ffff4d",type:["line"],data:[0,0],shadow:true}];
+//        this.chartOptions.series = [{name:"Altitude", type:["area"], data:data[0], dataGrouping:{smoothed:false},tooltip: {  valueSuffix: ' ft' }},
+	
+         this.chartOptions.series = [{name:"Altitude", type:["area"], yAxis: 0, data:[0,0], dataGrouping:{smoothed:false},tooltip: {  valueSuffix: ' ft' }},
+		{name:"Incline", color:"#00FF00", type:["line"], yAxis: 1, data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' %' }}, 
+		{name:"Speed",color:"#ff0000", type:["line"], yAxis: 2, data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' Mph' }}, 
+		{name:"Cadence",color:"#ffffff",type:["line"], yAxis: 3, data:[0,0],tooltip: { valueDecimals: 2,valueSuffix: ' Rpm' }}, 
+		{name:"Power",color:"#ffff4d",type:["line"], yAxis: 4,data:[0,0],shadow:true}];
 
 	  //  this.chartOptions.yAxis.plotLines[0].value = 218;
 		$("#stockContainer").highcharts('StockChart', this.chartOptions);
@@ -928,9 +1030,9 @@
 }
  
  DMap.prototype.buildGuages = function() {
+	// setOptions(Highcharts.theme);
 	 
-	 
-	 $('#container-speed').highcharts(Highcharts.merge(gaugeOptions, {
+	 $('#container-speed').highcharts(Highcharts.merge(Highcharts.theme,Highcharts.merge(gaugeOptions, {
 	        yAxis: {
 	            min: 0,
 	            max: 60,
@@ -956,10 +1058,10 @@
 	            }
 	        }]
 
-	    }));
+	    })));
 
 	    // The RPM gauge
-	    $('#container-rpm').highcharts(Highcharts.merge(gaugeOptions, {
+	    $('#container-rpm').highcharts(Highcharts.merge(Highcharts.theme,Highcharts.merge(gaugeOptions, {
 	        yAxis: {
 	            min: 0,
 	            max: 150,
@@ -985,10 +1087,10 @@
 	            }
 	        }]
 
-	    }));
+	    })));
 	    
 	    // The Power gauge
-	    $('#container-power').highcharts(Highcharts.merge(gaugeOptions, {
+	    $('#container-power').highcharts(Highcharts.merge(Highcharts.theme,Highcharts.merge(gaugeOptions, {
 	        yAxis: {
 	            min: 0,
 	            max: 1000,
@@ -1012,10 +1114,10 @@
 	            }
 	        }]
 
-	    }));
+	    })));
 	    
 	    // The Load gauge
-	    $('#container-load').highcharts(Highcharts.merge(gaugeOptions, {
+	    $('#container-load').highcharts(Highcharts.merge(Highcharts.theme,Highcharts.merge(gaugeOptions, {
 	        yAxis: {
 	            min: 1,
 	            max: 5,
@@ -1039,7 +1141,7 @@
 	            }
 	        }]
 
-	    }));
+	    })));
  }
 	 
  DMap.prototype.updateSpeedGuage = function (speed) {
@@ -1093,7 +1195,7 @@ DMap.prototype.updateLoadGuage = function (load) {
  DMap.prototype.testChart = function (startTime, endTime) {
      this.highlightInterval('selectedRect', startTime, endTime);
  };
-
+/*
  DMap.prototype.displayLocationElevation = function (location, elevator, infowindow) {
 	  // Initiate the location request
 	  elevator.getElevationForLocations({
@@ -1114,25 +1216,26 @@ DMap.prototype.updateLoadGuage = function (load) {
 	    }
 	  });
 }
+ */
  
- DMap.prototype.drawZone = function (low, high, id, zoneName, threshold) {
-     var extremes = this.chart.yAxis[0].getExtremes();
+ DMap.prototype.drawZone = function (chart,low, high, id, zoneName, threshold, axis) {
+     var extremes = this.chart.yAxis[axis].getExtremes();
 
      var yMax = extremes.max;
      var yMin = 0;
      var ftp = threshold;
-     var difference = this.chart.chartHeight - this.chart.plotHeight - this.chart.plotTop;
-     var pixelHeight = this.chart.plotSizeY / (yMax - yMin);
+     var difference = chart.chartHeight - chart.plotHeight - chart.plotTop;
+     var pixelHeight = chart.plotSizeY / (yMax - yMin);
 
-     var top = this.chart.yAxis[0].top;
+     var top = chart.yAxis[axis].top;
      var targetHigh = (high * ftp);
      var targetLow = (low * ftp);
      var topOffset = (targetHigh * pixelHeight);
      targetLow = topOffset - (targetLow * pixelHeight);
 
-     var yStart = this.chart.plotSizeY - topOffset + top;
+     var yStart = chart.plotSizeY - topOffset + top;
 
-     this.chart.renderer.rect(this.chart.chartWidth - this.chart.plotSizeX, yStart, this.chart.chartWidth, targetLow, 0)
+     chart.renderer.rect(chart.chartWidth - chart.plotSizeX, yStart, chart.chartWidth, targetLow, 0)
          .attr({
              'stroke-width': 0,
              fill: 'yellow',
@@ -1142,7 +1245,7 @@ DMap.prototype.updateLoadGuage = function (load) {
          })
          .add();
 
-     this.chart.renderer.text(zoneName, chart.chartWidth - chart.plotSizeX + 5, yStart + targetLow - 5)
+     chart.renderer.text(zoneName, chart.chartWidth - chart.plotSizeX + 5, yStart + targetLow - 5)
          .attr({
              id: id + "2",
              zIndex: 5,
@@ -1154,7 +1257,7 @@ DMap.prototype.updateLoadGuage = function (load) {
          })
          .add();
 
-     this.chart.renderer.text(zoneName, this.chart.chartWidth - this.chart.plotSizeX + 5 + 1, yStart + targetLow - 5 + 1)
+     chart.renderer.text(zoneName, chart.chartWidth - chart.plotSizeX + 5 + 1, yStart + targetLow - 5 + 1)
          .attr({
              id: id + "3",
              zIndex: 4,
@@ -1176,17 +1279,17 @@ DMap.prototype.updateLoadGuage = function (load) {
  	this.bearing  = Point2PointBearing(pt1, pt2);
  	var x = (pt1.lng() + pt2.lng()) / 2;
  	var y = (pt1.lat() + pt2.lat()) / 2;
- 	this.bD = new google.maps.LatLng(y, x);
+ 	this.latLng = new google.maps.LatLng(y, x);
  	
  };
  
- DMap.prototype.cj = function () { 
- 	this.V = [];
+ DMap.prototype.buildRouteLegs = function () { 
+ 	this.routeLegs = [];
  	for (var i = 0; i < this.bO.length - 1; i++) { 
  		var pt1 = this.bO[i];
  		var pt2 = this.bO[i + 1];
- 		var aK = new RouteLeg(pt1, pt2);
- 		this.V.push(aK);
+ 		var routeLeg = new RouteLeg(pt1, pt2);
+ 		this.routeLegs.push(routeLeg);
  	} 
  };
  
@@ -1197,7 +1300,7 @@ DMap.prototype.updateLoadGuage = function (load) {
  	//map.setZoom(this.al);
  	map.setZoom(this.mapZoom);
  	this.ax = this.bO[0].pt;
- 	this.F = true;
+ 	this.isRunning = true;
  	setTimeout("getIncrementFromBike()", 1);
  };
  
@@ -1346,15 +1449,15 @@ DMap.prototype.updateLoadGuage = function (load) {
  	this.directionsPanel.innerHTML = "<div id='directionsDiv'></div>";
  };
  
- DMap.prototype.bw = function () { 
+ DMap.prototype.bw2 = function (startLoc,endLoc, waypoints,name) { 
  
- 	this.startLoc 		= eid("fromText").value;
- 	this.endLoc 		= eid("toText").value;
- 	this.viaLoc 		= eid("viaText").value;
- 	this.draggableRoute = eid("draggableRouteBox").checked;
+ 	this.startLoc 		= startLoc;
+ 	this.endLoc 		= endLoc;
+ 	this.viaLoc 		= "";
+ 	this.draggableRoute = false;
  	var d= new Date();
  	
- 	this.journeyName 	= eid("fromText").value  + " to " + eid("toText").value + " " + d.toISOString();
+ 	this.journeyName 	= name ;//+ " " + d.toISOString();
  	
  	if (!this.directionsRenderer) { 
  		this.directionsRenderer = new google.maps.DirectionsRenderer({ map: map, draggable: true, polylineOptions: { clickable: this.draggableRoute, strokeColor: "#FF0000", strokeOpacity: 0.8, strokeWeight: 3} });
@@ -1381,7 +1484,7 @@ DMap.prototype.updateLoadGuage = function (load) {
  	this.travelMode 	= eid("travelModeSelect").value;
  	this.avoidHighways 	= eid("avoidHighwaysBox").checked;
  	this.avoidTolls 	= eid("avoidTollsBox").checked;
- 	var aR = { origin: this.startLoc, destination: this.endLoc, travelMode: travelModes[this.travelMode], avoidHighways: this.avoidHighways ? true : false, avoidTolls: this.avoidTolls ? true : false, region: this.region };
+ 	var aR = { origin: this.startLoc, destination: this.endLoc, waypoints:waypoints , travelMode: google.maps.TravelMode.BICYCLING, avoidHighways: this.avoidHighways ? true : false, avoidTolls: this.avoidTolls ? true : false, region: this.region };
 
  	if (this.viaLoc) { 
  	
@@ -1413,6 +1516,72 @@ DMap.prototype.updateLoadGuage = function (load) {
  		} });
  };
  
+ DMap.prototype.bw = function () { 
+	 
+	 	this.startLoc 		= eid("fromText").value;
+	 	this.endLoc 		= eid("toText").value;
+	 	this.viaLoc 		= eid("viaText").value;
+	 	this.draggableRoute = eid("draggableRouteBox").checked;
+	 	var d= new Date();
+	 	
+	 	this.journeyName 	= eid("fromText").value  + " to " + eid("toText").value ;//+ " " + d.toISOString();
+	 	
+	 	if (!this.directionsRenderer) { 
+	 		this.directionsRenderer = new google.maps.DirectionsRenderer({ map: map, draggable: true, polylineOptions: { clickable: this.draggableRoute, strokeColor: "#FF0000", strokeOpacity: 0.8, strokeWeight: 3} });
+	 	} 
+	 	
+	 	this.directionsRenderer.setPanel(eid("directionsDiv"));
+
+	 	google.maps.event.addListener(this.directionsRenderer, 'directions_changed', function (a) { 
+	 		dmap.cd = dmap.directionsRenderer.getDirections();
+	 		//if (dmap.cA) { 
+	 		if (dmap.dirSvc) { 
+	 			var dQ = dmap.l;
+	 			var bX = dmap.directionsRenderer.getDirections();
+	 			//JSON.stringify(bX);
+	 			dmap.aw(bX, false);
+	 			dmap.directionsRenderer.setMap(map);
+	 			if (dmap.bk) { 
+	 				dmap.aC(dQ, true);
+	 			} 
+	 		} 
+	 	});
+	 	
+	 	
+	 	this.travelMode 	= eid("travelModeSelect").value;
+	 	this.avoidHighways 	= eid("avoidHighwaysBox").checked;
+	 	this.avoidTolls 	= eid("avoidTollsBox").checked;
+	 	var aR = { origin: this.startLoc, destination: this.endLoc, travelMode: travelModes[this.travelMode], avoidHighways: this.avoidHighways ? true : false, avoidTolls: this.avoidTolls ? true : false, region: this.region };
+
+	 	if (this.viaLoc) { 
+	 	
+	 		aR.waypoints = [];
+	 		var cg = this.viaLoc.split(",");
+	 		for (var i = 0;i < cg.length; i++) { 
+	 			var de = { location: cg[i] };
+	 			aR.waypoints.push(de);
+	 		} 
+	 		glog("waypoints = " + aR.waypoints);
+	 	} 
+	 	if (this.aL > 0) { 
+	 		aR.unitSystem = unitSystems[this.aL];
+	 	} 
+
+	 	dmap.dirSvc.route(aR, function (bK, bb) { 
+	 		if (bb == google.maps.DirectionsStatus.OK) { 
+	 			if (dmap.ai == 0) { 
+	 				dmap.ai = 2;
+	 			} 
+	 			setMode(dmap.ai);
+	 			dmap.directionsRenderer.setDirections(bK);
+	 			dmap.sendRoute(bK);
+	 			dmap.aw(bK, true);
+			 	if (dmap.ai == 2) { } 
+			} else { 
+			 	setMode(0);
+	 			alert("Get Directions Error " + bb);
+	 		} });
+	 };
  DMap.prototype.sendRoute = function (route){
 	 
  
@@ -1426,18 +1595,36 @@ DMap.prototype.updateLoadGuage = function (load) {
 	 
  }
  
- DMap.prototype.loadGPX = function (filename) { 
+ DMap.prototype.loadGPX = function (filename,useDB) { 
+	 
+	 setMode(2);
+	 if (map===null){
+			dmap.setupMap();
+			
+	 }
 	 var me=this;
 	 
-	 callAjax("services/api/import/gpx/" + filename +"/",function(data){
+	 var url = "services/api/import/gpx/" + filename +"/";
+	 
+	 if ((useDB !== undefined)&&(useDB==true)){
+		 url = "services/api/import/dbgpx/" + filename +"/";
+	 }
+	 
+	 
+	 callAjax(url,function(data){
 		 
 		 var obj = JSON.parse(data);
 		 var i;
 		 var locations = [];
+		 
 		 var distance=0;
 		 
+		 
+		
 		 for (i=0;i<obj[0].trkseg[0].trkpt.length;i++) {
 			 locations.push(new  google.maps.LatLng(parseFloat(obj[0].trkseg[0].trkpt[i].lat),parseFloat(obj[0].trkseg[0].trkpt[i].lon)));
+			 
+			 
 			 if (i>0){
 				 distance+= Point2PointDistance(locations[i-1], locations[i]) ;
 			 
@@ -1445,7 +1632,16 @@ DMap.prototype.updateLoadGuage = function (load) {
 			 
 			 
 		 }
-		 //fudge!
+	//	 var waypts = [];
+	//	 for (i=0;i<locations.length;i++) {
+	//		 waypts.push({
+	//			      location: locations[i],
+	//			      stopover: false
+	//		 });
+	//	 }
+	//	 
+		 //dmap.bw2(locations[0],locations[locations.length-1],waypts);
+		 dmap.currentDirections = {routes:[{legs:[{distance:{value:0}}]}]};
 		 dmap.currentDirections.routes[0].legs[0].distance.value = distance;
 		 //_.L
 		 var pline = google.maps.geometry.encoding.encodePath(locations);
@@ -1480,7 +1676,8 @@ DMap.prototype.updateLoadGuage = function (load) {
 		 }catch(ignore) {
 			 
 		 }
-		 for (var z in locations){
+		 var z=0;
+		 for (z=0; z< locations.length;z++) {
 			var pt = locations[z];
 			if (aW == null) { 
 				aW = pt;
@@ -1491,23 +1688,31 @@ DMap.prototype.updateLoadGuage = function (load) {
 				} 
 			} 
 		 }
+		 
 		 me.aI = 0;
 		 me.ae = 0;
-		 me.cj();
-		 	if (true) { 
-		 		me.bB(dmap.l, dmap.V[0].bearing);
-		 	} 
-		 	if (me.mode == 2 && pan) { 
-		 		var v = me.V[0];
-		 		pan.setPosition(me.l);
-		 		pan.setPov({ heading: v.bearing, pitch: 0, zoom: dmap.streeViewZoom });
-		 		pan.setVisible(Point2PointDistance(pan.location.latLng,dmap.l)<100);
-		 		dmap.bB(me.l, v.bearing);
-		 	} 
-		 	
-		 	dmap.ax = locations[0];
- 		
- 			map.setCenter(dmap.l);
+		 me.buildRouteLegs();
+		 
+	 	if (true) { 
+	 		me.updateMarker(dmap.l, dmap.routeLegs[0].bearing);
+	 	} 
+	 	
+	 	if (me.mode == 2 && pan) { 
+	 		var v = me.routeLegs[0];
+	 		pan.setPosition(me.l);
+	 		pan.setPov({ heading: v.bearing, pitch: 0, zoom: dmap.streeViewZoom });
+	 		if (pan.location!==undefined) {
+	 			pan.setVisible(Point2PointDistance(pan.location.latLng,dmap.l)<100);
+	 		} else {
+	 			pan.setVisible(true);
+	 		}
+	 		dmap.updateMarker(me.l, v.bearing);
+	 	} 
+	 	
+	 	dmap.ax = locations[0];
+	 	dmap.buildGuages();	
+		map.setCenter(dmap.l);
+		map.setZoom(12);
 		});
 
  }
@@ -1518,58 +1723,63 @@ DMap.prototype.updateLoadGuage = function (load) {
 	 var me= this;
 	 this.currentDirections = cL;
 	 
-	 if (this.chart==null){
+	 if (this.chart==null) {
 		 this.chart={};
 	 
-	 	getElevationForPath(cL.routes[0].overview_polyline,function(data){
-		 
-		me.buildChart(data);
-		
-			 
-	},cL.routes[0].legs[0].distance.value, me.journeyName);
-	 }
+	 	getElevationForPath(cL.routes[0].overview_polyline,function(data) {
+			me.buildChart(data);
+		},cL.routes[0].legs[0].distance.value, me.journeyName);
+	}
 	 
- 	var bP = cL.routes;
- 	var ar = bP[0].legs;
+ 	var routes = cL.routes;
+ 	var ar = routes[0].legs;
  	dmap.l = ar[0].start_location;
  	dmap.bO = [];
  	dmap.bO.push(dmap.l);
  	var aW = null;
- 	for (var r in bP) { 
- 		var ci = bP[r];
+ 	for (var r in routes) { 
+ 		var ci = routes[r];
  		var ar = ci.legs;
  		for (var i in ar) { 
- 			var aK = ar[i];
- 			var cl = aK.steps;
- 			for (var j in cl) { 
- 				var cu = cl[j];
- 				var an = cu.path;
- 				for (var k in an) { 
- 					var pt = an[k];
- 					if (aW == null) { 
- 						aW = pt;
- 					} else { 
- 						if (Point2PointDistance(aW, pt) > 1) { 
- 							dmap.bO.push(pt);
- 							aW = pt;
- 						} 
- 					} 
- 				} 
- 			} 
+ 			if (ar.hasOwnProperty(i)) {
+	 			var aK = ar[i];
+	 			var cl = aK.steps;
+	 			for (var j in cl) { 
+	 				if (cl.hasOwnProperty(j)) {
+		 				var cu = cl[j];
+		 				var an = cu.path;
+		 				for (var k in an) { 
+		 					if (an.hasOwnProperty(k)) {
+			 					var pt = an[k];
+			 					if (aW == null) { 
+			 						aW = pt;
+			 					} else { 
+			 						if (Point2PointDistance(aW, pt) > 1) { 
+			 							dmap.bO.push(pt);
+			 							aW = pt;
+			 						} 
+			 					}
+		 					}
+		 				}
+	 				}
+	 			}
+ 			}
  		} 
  	} 
  	this.aI = 0;
  	this.ae = 0;
- 	this.cj();
+ 	this.buildRouteLegs();
+ 	
  	if (cv) { 
- 		this.bB(dmap.l, dmap.V[0].bearing);
+ 		this.updateMarker(dmap.l, dmap.routeLegs[0].bearing);
  	} 
  	if (this.mode == 2 && pan) { 
- 		var v = this.V[0];
+ 		var v = this.routeLegs[0];
  		pan.setPosition(this.l);
  		pan.setPov({ heading: v.bearing, pitch: 0, zoom: dmap.streeViewZoom });
- 		dmap.bB(this.l, v.bearing);
+ 		dmap.updateMarker(this.l, v.bearing);
  	} 
+ 	dmap.buildGuages();
  };
  
  function swapDirections() { 
@@ -1799,7 +2009,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
  };
  
  
- var mapTypes = [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.HYBRID, google.maps.MapTypeId.TERRAIN,"OpenStreetMap","OpenStreetMapOSM","OpenTopoMap", "OpenCycleMap"];
+ var mapTypes = [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE, google.maps.MapTypeId.HYBRID, google.maps.MapTypeId.TERRAIN,"OpenStreetMap","OpenStreetMapOSM","OpenTopoMap", "OpenCycleMap","TopoClassical"];
  
 
  DMap.prototype.setMarkers = function (title,location,zIndex) {
@@ -1923,10 +2133,32 @@ DMap.prototype.resizeElementsOrig = function (a) {
  	     name: "OpenCycleMap",
  	     maxZoom: 18
  	 }));
+ 	
+ 	map.mapTypes.set("TopoClassical", new google.maps.ImageMapType({
+	     getTileUrl: function(coord, zoom) {
+	         // "Wrap" x (logitude) at 180th meridian properly
+	         // NB: Don't touch coord.x because coord param is by reference, and changing its x property breakes something in Google's lib 
+	         var tilesPerGlobe = 1 << zoom;
+	         var x = coord.x % tilesPerGlobe;
+	         if (x < 0) {
+	             x = tilesPerGlobe+x;
+	         }
+	         // Wrap y (latitude) in a like manner if you want to enable vertical infinite scroll
+
+	         return "http://eu.cycle.travel/topoclassical_eu/" + zoom + "/" + x + "/" + coord.y + ".png";
+	     },
+	     tileSize: new google.maps.Size(256, 256),
+	     name: "OpenCycleMap",
+	     maxZoom: 18
+	 }));
+ 	
+ 	
+ 	
+ 	
  	 var infowindow = new google.maps.InfoWindow({map: map});
  	google.maps.event.addListener(map, "click", function (event) { 
  		//dmap.aC(event.latLng, true);
- 		dmap.displayLocationElevation(event.latLng, elevator, infowindow);
+ 		//dmap.displayLocationElevation(event.latLng, elevator, infowindow);
  	});
  	//this.cR();
  };
@@ -1948,7 +2180,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
  	} 
  };
  
- DMap.prototype.bB = function (pt, df) { 
+ DMap.prototype.updateMarker = function (pt, df) { 
 	
 	if (!pandas.length) { 
 		//load the images
@@ -1961,7 +2193,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
 		var cZ = new google.maps.MarkerImage("images/pegman.png", new google.maps.Size(49, 52), new google.maps.Point(0, 0), new google.maps.Point(25, 36));
  		//var ak = new google.maps.Marker({ position: pt, icon: cZ, map: map, draggable: true, zIndex: 10000 });
  		//google.maps.event.addListener(ak, "dragstart", function (a) { 
- 		//	if (dmap.F) { 
+ 		//	if (dmap.isRunning) { 
  		//		pauseAnimation();
  		//	} 
  		//});
@@ -1984,22 +2216,23 @@ DMap.prototype.resizeElementsOrig = function (a) {
 	
 	var bU = 0;
  	var bd = -1;
- 	for (var i in this.V) { 
- 		var dg = this.V[i].bD;
- 		var aS = Point2PointDistance(pt, dg);
- 		if (!bU || aS < bU) { 
- 			bU = aS;
+ 	
+ 	for (var i in this.routeLegs) { 
+ 		var dg = this.routeLegs[i].latLng;
+ 		var distance = Point2PointDistance(pt, dg);
+ 		if (!bU || distance < bU) { 
+ 			bU = distance;
  			bd = i;
  		} 
  	} 
- 	var J = this.V[bd];
- 	var av = J.bD;
+ 	var J = this.routeLegs[bd];
+ 	var av = J.latLng;
  	if (J) { 
  		var av = this.dB(bd, pt);
  		this.l = av;
  		this.aI = bd;
  		this.ae = J.distance / 2;
- 		this.bB(av, J.bearing);
+ 		this.updateMarker(av, J.bearing);
 		 if (dR && pan) { 
 			pan.setPosition(av);
  			pan.setPov({ heading: J.bearing, pitch: 0, zoom: this.streeViewZoom });
@@ -2008,13 +2241,15 @@ DMap.prototype.resizeElementsOrig = function (a) {
  };
  
  DMap.prototype.dB = function (bz, pt) { 
-	var J = this.V[bz];
+	
+	var J = this.routeLegs[bz];
  	var pt1 = J.start;
  	var pt2 = J.end;
  	var dm = pt1 + " to " + pt2;
- 	var aS = Point2PointDistance(pt1, pt2);
+ 	var distance = Point2PointDistance(pt1, pt2);
  	var dF = 0;
- 	while (aS > 1) { 
+ 	
+ 	while (distance > 1) { 
  		var mx = (pt1.lng() + pt2.lng()) / 2;
  		var my = (pt1.lat() + pt2.lat()) / 2;
  		var pt0 = new google.maps.LatLng(my, mx);
@@ -2025,9 +2260,10 @@ DMap.prototype.resizeElementsOrig = function (a) {
  		} else { 
  			pt1 = pt0;
  		} 
- 		aS = Point2PointDistance(pt1, pt2);
+ 		distance = Point2PointDistance(pt1, pt2);
  		dF++;
  	} 
+ 	
  	var bZ = Point2PointDistance(J.start, J.end);
  	var aJ = Point2PointDistance(J.start, pt1);
  	var ds = aJ * 100 / bZ;
@@ -2046,6 +2282,10 @@ DMap.prototype.resizeElementsOrig = function (a) {
 	// this.by.innerHTML = "<table cellspacing=0 cellpadding=2 style='width:100%;height:100%;background-color:gainsboro' ><tr><td style='width:130px'>" + "<input id='playButton' type='button' onclick='playAnimation()' value='Play' style='width:60px'  /> " + "<input id='resetButton' type='button' onclick='resetDirections()' value='Reset'  style='width:60px' />" + "</td><td align='right'>" + "<a id='dirlink' class='mb0' href='javascript:setMode(1)' title='Display Directions' />Directions</a> " + "<a id='svlink' class='mb0' href='javascript:setMode(2)' title='Display Street View' />Street View</a>" + "</td></tr></table>";
  };
  */
+ function loadDD() {
+	 dmap.loadGPX("Devon Dirt 2015 v2.gpx");
+ }
+
  
  DMap.prototype.bp = function () { 
 	 this.headerPanel.innerHTML = "<nav class=\"navbar navbar-inverse\"><div class=\"container\"><div class=\"navbar-header\"><button type=\"button\" class=\"navbar-toggle collapsed\" data-toggle=\"collapse\" data-target=\".navbar-collapse\">"
@@ -2054,7 +2294,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
 		 + "<div class=\"navbar-collapse collapse\"><ul class=\"nav navbar-nav\">"
 		 + "<li class=\"active\"><button type=\"button\" id='playButton' onclick='playAnimation()' class=\"btn btn-primary navbar-btn\">Start</button></li>"
 		 + "<li class=\"active\"><button type=\"button\" id='resetButton' onclick='resetDirections()' class=\"btn btn-danger navbar-btn\">Reset</button></li>"
-		 
+		 + "<li class=\"active\"><button type=\"button\" id='loadDDButton' onclick='loadDD()' class=\"btn btn-warning navbar-btn\">Load Devon Dirt</button></li>"
 		 + "<li class=\"dropdown\"><a href=\"#\" class=\"dropdown-toggle\" data-toggle=\"dropdown\" role=\"button\" aria-haspopup=\"true\" aria-expanded=\"false\"><span class=\"glyphicon glyphicon-globe\" aria-hidden=\"true\"></span> Map Type<span class=\"caret\"></span></a>"
          + "<ul class=\"dropdown-menu\">"
          + "<li><a href=\"#\" onClick=\"map.setMapTypeId('roadmap');\">Road</a></li>"
@@ -2065,8 +2305,9 @@ DMap.prototype.resizeElementsOrig = function (a) {
          + "<li><a href=\"#\" onClick=\"map.setMapTypeId('OpenStreetMapOSM');\">Open Street Map MQ</a></li>"
          + "<li><a href=\"#\" onClick=\"map.setMapTypeId('OpenTopoMap');\">Open Topo Map</a></li>"
          + "<li><a href=\"#\" onClick=\"map.setMapTypeId('OpenCycleMap');\">Open Cycle Map</a></li>"
+         + "<li><a href=\"#\" onClick=\"map.setMapTypeId('TopoClassical');\">Cycle Map</a></li>"
          + "</ul></li>"
-		 
+         
 	//	 + "<li class=\"active\"><span class=\"label label-default\" id='distDisplay'></span></li>"
 		// + "<li class=\"active\"><span class=\"label label-default\" id='speedDisplay'></span></li>"
 		// + "<li class=\"active\"><span class=\"label label-default\" id='cadenceDisplay'></span></li>"
@@ -2080,17 +2321,17 @@ DMap.prototype.resizeElementsOrig = function (a) {
 		 + "<div id=\"container-rpm\" style=\"width: 25%; height: 40%; float: left\"></div>"
 		 + "<div id=\"container-power\" style=\"width: 25%; height: 40%; float: left\"></div>"
 		 + "<div id=\"container-load\" style=\"width: 25%; height: 40%; float: left\"></div></div>"
-		 + "<div class=\"container-fluid\"><div class=\"row\">"
+		 + "<div class=\"container-fluid\"><div class=\"row\"><h5>"
 		 + "<span class=\"label label-default\" id='distDisplay'></span>"
 		 + "<span class=\"label label-default\" id='speedDisplay'></span>"
-		 + "</div><div class=\"row\">"
+		 + "</div><br><div class=\"row\">"
 		 + "<span class=\"label label-default\" id='cadenceDisplay'></span>"
 		 + "<span class=\"label label-default\" id='timeDisplay'></span>"
-		 + "</div><div class=\"row\">"
+		 + "</div><br><div class=\"row\">"
 		 + "<span class=\"label label-default\" id='aveSpeedDisplay'></span>"
 		 + "<span class=\"label label-default\" id='maxSpeedDisplay'></span>"
-		 + "</div><div class=\"row\">"
-		 + "<span class=\"label label-default\" id='powerDisplay'></span></div></div>";
+		 + "</div><br><div class=\"row\">"
+		 + "<span class=\"label label-default\" id='powerDisplay'></span></div></div></h5>";
 		 
 	// this.by.innerHTML = "<table cellspacing=0 cellpadding=2 style='width:100%;height:100%;background-color:gainsboro' ><tr><td style='width:130px'>" + "<input id='playButton' type='button' onclick='playAnimation()' value='Play' style='width:60px'  /> " + "<input id='resetButton' type='button' onclick='resetDirections()' value='Reset'  style='width:60px' />" + "</td><td align='right'>" + "<a id='dirlink' class='mb0' href='javascript:setMode(1)' title='Display Directions' />Directions</a> " + "<a id='svlink' class='mb0' href='javascript:setMode(2)' title='Display Street View' />Street View</a>" + "</td></tr></table>";
  };
@@ -2104,7 +2345,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
 	
 	 
 	// + "<div class='panel panel-success'><div class='panel-heading'><h1 class='panel-title'>Route</h1></div><div class='panel-body'>"
-	 + "<div class='panel-heading'><h1 class='panel-title'>Route</h1></div><div class='panel-body'>"
+	 + "<div class='panel-heading'><h1 class='panel-title'>Cycle Route</h1></div><div class='panel-body'>"
 	 // + "<div class=\"table-responsive\"><table cellspacing=0 cellpadding=4 class='table table-striped' >" 
 	 
 	 + "<div class=\"container\"><form class=\"form-horizontal\" role=\"form\">"
@@ -2144,10 +2385,87 @@ DMap.prototype.resizeElementsOrig = function (a) {
 	 + "<div class=\"form-group\"><button type='button' value='Get Directions' class='btn btn-lg btn-success navbar-btn' onclick='parseDirForm()'></span><span class=\"glyphicon glyphicon-globe\" aria-hidden=\"true\"></span> Get Directions</button>"
 	 + "&nbsp;<button type='button' value='Save Route' class='btn btn-lg btn-primary navbar-btn' onclick=\"dmap.saveRoute();\"><span class=\"glyphicon glyphicon-save\" aria-hidden=\"true\"></span> Save Route</button></div>"
 	// + "</div></form></div></div>" ;
-	 + "</div></form></div>" ;
+	 + "" 
+	 + "<h4><i class=\"icon-dropbox icon-1\"></i>Dropbox Files</h4>"
+	 + "<table id=\"grid-data\" class=\"table table-condensed table-hover table-striped\" data-toggle=\"bootgrid\" data-ajax=\"true\" data-url=\"services/api/list/files/dropbox/gpx1\">"
+	 + "<thead> <tr> "
+	 //+ "<th data-column-id=\"id\" data-type=\"numeric\" data-identifier=\"true\">ID</th>"
+	 + 				"<th data-column-id=\"name\">Filename</th>"
+	 +				"<th data-column-id=\"serverModified\" data-formatter=\"modified\" data-type=\"numeric\" data-header-css-class=\"bgColumnModified\">Modified</th>"
+	 + 				"<th data-column-id=\"size\" data-type=\"numeric\" data-formatter=\"filesize\" data-header-css-class=\"bgColumnSize\">Size</th>"
+	 + 				"<th data-column-id=\"commands\" data-formatter=\"commands\" data-sortable=\"false\" data-header-css-class=\"bgColumnCommands\"></th>"
+	 + 				"</tr></thead></table></div></form></div>";
 	 
+	 var grid = $("#grid-data").bootgrid({
+	//	ajax: true,
+		caseSensitive:true,
+		selection: true,
+	    multiSelect: false,
+	    rowSelect:true,
+	    formatters: {
+	        "commands": function(column, row) {
+	            return "<button type=\"button\" class=\"btn btn-xs btn-default command-edit\" data-row-id=\"" + row.name + "\"><span class=\"glyphicon glyphicon-cloud-download\"></span></button> " + 
+	                "<button type=\"button\" class=\"btn btn-xs btn-default command-delete\" data-row-id=\"" + row.id + "\"><span class=\"glyphicon glyphicon-trash\"></span></button>";
+	        },
+
+            "link": function(column, row) {
+                return "<a href=\"#\">" + column.id + ": " + row.id + "</a>";
+            },
+	        
+	        "modified": function (column,row) {
+	        	return dateFormat(new Date(row.serverModified), "d/mm/yy, H:MM:ss");
+	        },
+	        
+            "filesize": function (column,row) {
+	        	return filesize(row.size);
+	        }
+	    }
+			 
+	});
 	 
-	 
+	 grid.on("selected.rs.jquery.bootgrid", function(e, rows)
+			{
+	    var rowIds = [];
+	    for (var i = 0; i < rows.length; i++)
+	    {
+	        rowIds.push(rows[i].id);
+	    }
+	    alert("Select: " + rowIds.join(","));
+	})
+	grid.on("deselected.rs.jquery.bootgrid", function(e, rows)
+	{
+	    var rowIds = [];
+	    for (var i = 0; i < rows.length; i++)
+	    {
+	        rowIds.push(rows[i].id);
+	    }
+	    alert("Deselect: " + rowIds.join(","));
+	})
+	
+	grid.on("loaded.rs.jquery.bootgrid", function()
+			{
+	    /* Executes after data is loaded and rendered */
+	    grid.find(".command-edit").on("click", function(e)
+	    {
+	        //alert("You pressed edit on row: " + $(this).data("row-id"));
+	        dmap.loadGPX($(this).data("row-id"),true);
+	    }).end().find(".command-delete").on("click", function(e)
+	    {
+	        alert("You pressed delete on row: " + $(this).data("row-id"));
+	    });
+	});
+			
+	function getServerData()
+	{
+	 console.log("getServerData");
+	 $("#grid-data").bootgrid({ caseSensitive:false});
+	}
+			
+	function clearGrid() {
+		console.log("clearGrid");
+		$("#grid-data").bootgrid().clear();
+	}
+
 	eid("fromText").value 	= this.startLoc;
  	eid("toText").value 	= this.endLoc;
  	eid("viaText").value 	= this.viaLoc;
@@ -2183,15 +2501,15 @@ DMap.prototype.resizeElementsOrig = function (a) {
 	 
  };
  
- DMap.prototype.dA = function () { 
+ DMap.prototype.setupStreetview = function () { 
 	 
  
-	var ca = { addressControl: false, linksControl: false, navigationControl: true };
- 	pan = new google.maps.StreetViewPanorama(this.streetViewPanel, ca);
+	//var ca = { addressControl: false, linksControl: false, navigationControl: true };
+ 	pan = new google.maps.StreetViewPanorama(this.streetViewPanel, { addressControl: false, linksControl: false, navigationControl: true });
  	pan.setPosition(this.l);
  	pan.setPov({ heading: 135, pitch: 0, zoom: this.streeViewZoom });
  	google.maps.event.addListener(pan, "pov_changed", function (a) { 
- 		if (!dmap.F) { 
+ 		if (!dmap.isRunning) { 
  			var cO = pan.getPov();
  			var az = cO.heading;
  			while (az < 0) { 
@@ -2200,7 +2518,7 @@ DMap.prototype.resizeElementsOrig = function (a) {
  			while (az > 360) { 
  				az -= 360;
  			} 
- 			dmap.bB(dmap.l, az);
+ 			dmap.updateMarker(dmap.l, az);
  		} 
  	});
  };

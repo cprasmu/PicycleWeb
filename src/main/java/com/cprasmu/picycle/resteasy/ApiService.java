@@ -8,33 +8,64 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
+
+
 import com.cprasmu.picycle.MetricsService;
-import com.cprasmu.picycle.Utils;
+import com.cprasmu.picycle.PiCycleServer;
+import com.cprasmu.picycle.dropBox.DropBox;
+import com.cprasmu.picycle.io.btle.Test;
+
 import com.cprasmu.picycle.model.BikeJourney;
 import com.cprasmu.picycle.model.BikeLoadResponse;
+import com.cprasmu.picycle.model.BikeStatus;
 import com.cprasmu.picycle.model.ConsumeDeltaResponse;
 import com.cprasmu.picycle.model.ElevationPoint;
+import com.cprasmu.picycle.model.ElevationRequest;
 import com.cprasmu.picycle.model.Location;
 import com.cprasmu.picycle.model.chart.DataSet;
 import com.cprasmu.picycle.model.gpx.TrkType;
+
+import com.cprasmu.picycle.utils.Utils;
+import com.dropbox.core.DbxException;
+import com.dropbox.core.v2.files.DownloadErrorException;
+import com.dropbox.core.v2.files.ListFolderErrorException;
+import com.dropbox.core.v2.files.Metadata;
 
 
 @Path("/api")
 public class ApiService {
 	@Context org.jboss.resteasy.spi.HttpResponse response;
+	@Context org.jboss.resteasy.spi.HttpRequest request;
+	
+	//@Inject 
+	//PiCycleServer server;
+	
+	@GET
+	@Path("/bikeLocation")
+	@Produces("application/json")
+	public BikeStatus getBikeStatus(){
+		return PiCycleServer.getInstance().getBikeStatus();
+	}
+	
+	
+	
 	
 	@GET
 	@Path("/reset")
@@ -49,6 +80,9 @@ public class ApiService {
 	@Path("/echo/{message}")
 	@Produces("text/plain")
 	public String echo(@PathParam("message")String message){
+		Test btle = new com.cprasmu.picycle.io.btle.Test();
+		btle.test();
+		
 	    return message;    
 	}
 	
@@ -122,6 +156,14 @@ public class ApiService {
 	}
 	
 	@GET
+	@Path("/import/dbgpx/{filename}")
+	@Produces("application/json")
+	public List<TrkType> parseDBGPX(@PathParam("filename")String filename) throws DownloadErrorException, DbxException{
+	    return Utils.parseDBGPX("/"+filename) ;
+	    
+	}
+	
+	@GET
 	@Path("/list/files/gpx")
 	@Produces("application/json")
 	public List<File> getGPXFiles(){
@@ -129,6 +171,68 @@ public class ApiService {
 	    
 	}
 	
+	@POST
+	@GET
+	@Path("/list/files/dropbox/gpx")
+	@Produces("application/json")
+	public List<Metadata> getDBGPXFiles() throws ListFolderErrorException, DbxException{
+	    return DropBox.listFiles() ;
+	    
+	}
+	
+	@POST
+	@GET
+	@Path("/list/files/dropbox/gpx1")
+	@Consumes("application/x-www-form-urlencoded")
+	@Produces("application/json")
+	public HashMap<String,Object> getDBGPXFiles1(MultivaluedMap<String, String> form ) throws ListFolderErrorException, DbxException {
+		//@FormParam("current") Integer current,@FormParam("rowCount") Integer rowCount,@FormParam("searchPhrase") String searchPhrase
+		
+		Integer current=Integer.parseInt(form.get("current").get(0));
+		Integer rowCount=Integer.parseInt(form.get("rowCount").get(0));
+		String searchPhrase=form.get("searchPhrase").get(0);
+		String sortField="";
+		String sortDir="";
+		
+		for(String item:form.keySet()){
+			if(item.startsWith("sort[")){
+				
+				sortField=(item.split("\\[")[1]).replace("]", "");
+				sortDir=form.getFirst(item);
+			}
+		}
+		
+		HashMap<String,Object>result = new HashMap<String,Object>();
+
+		List<Metadata>tmp = new ArrayList<>();
+		Integer idx = 0;
+		current = current-1;
+		List<Metadata>dblist = DropBox.listFiles();
+		
+		DropBox.sortList(dblist, sortField);
+		
+		Integer totalCount=0;
+
+		
+		for (Metadata meta : dblist) {
+			idx++;
+			if (meta.getName().toLowerCase().contains(searchPhrase.toLowerCase())) {
+				totalCount++;
+				
+				if (idx>(current*rowCount) && tmp.size()<=rowCount) {
+					tmp.add(meta);
+				}
+			}
+		}
+		
+		result.put("rows", tmp);
+		result.put("rowCount", rowCount );
+		result.put("total", totalCount);
+		result.put("current", current+1);
+		
+	    return result;
+	    
+	}
 	
 	@POST
 	@Path("/journeys")
@@ -155,18 +259,50 @@ public class ApiService {
 	
 	
 	@GET
+	@Path("/dropbox")
+	@Produces("text/plain")
+	public String dropBox() {
+		MetricsService.getInstance().finaliseJourney();
+	    return "DONE";    
+	}
+	
+	@GET
 	@Path("/pulse")
 	@Produces("application/json")
 	public String pulse(){
-		 for (int i =0; i<500; i++){
+		 for (int i =0; i<150; i++){
 			 MetricsService.getInstance().wheelPulse();
 			   try {
-				   Thread.sleep(150);
+				   Thread.sleep(200);
 			   } catch (InterruptedException e) {
 				   e.printStackTrace();
 			   }
+			   if(i % 5 == 0){
+				   MetricsService.getInstance().crankPulse();
+			   }
 		 }
-	    
+		 for (int i =0; i<150; i++){
+			 MetricsService.getInstance().wheelPulse();
+			   try {
+				   Thread.sleep(180);
+			   } catch (InterruptedException e) {
+				   e.printStackTrace();
+			   }
+			   if(i % 5 == 0){
+				   MetricsService.getInstance().crankPulse();
+			   }
+		 }
+		 for (int i =0; i<290; i++){
+			 MetricsService.getInstance().wheelPulse();
+			   try {
+				   Thread.sleep(220);
+			   } catch (InterruptedException e) {
+				   e.printStackTrace();
+			   }
+			   if(i % 5 == 0){
+				   MetricsService.getInstance().crankPulse();
+			   }
+		 }
 	    return "Reset";   
 	}
 	
@@ -190,6 +326,7 @@ public class ApiService {
 	    return MetricsService.getInstance().setBikeLoad(load);  
 	}
 	
+	/*
 	@GET
 	@Path("/elevation/{journeyName}/{samples}/{path}")
 	@Produces("application/json")
@@ -221,6 +358,42 @@ public class ApiService {
 		 
 		MetricsService.getInstance().reset();
 		MetricsService.getInstance().start(journeyName);
+		
+		return evelvationProfile;
+	}
+	*/
+	
+	@POST
+	@Path("/elevation")
+	@Produces("application/json")
+	public List<ElevationPoint> elevationPost(ElevationRequest eleReq) throws IOException{
+		
+		
+		String ELEVATION_BASE_URL 	= "https://maps.googleapis.com/maps/api/elevation/json";
+		
+		URL elevationURL = new URL(ELEVATION_BASE_URL + "?path=" + eleReq.getPath() + "&samples=" + eleReq.getSamples());
+		URLConnection yc = elevationURL.openConnection();
+		BufferedReader in = new BufferedReader( new InputStreamReader( yc.getInputStream()));
+		
+		String inputLine;
+		StringBuffer data=  new StringBuffer();
+		  
+		while ((inputLine = in.readLine()) != null) {
+			data.append(inputLine);
+		}
+		  
+		ObjectMapper objectMapper = new ObjectMapper();
+		  
+		LinkedHashMap<String,Object> results = objectMapper.readValue(data.toString(), LinkedHashMap.class);
+		
+		List<ElevationPoint> evelvationProfile = (List<ElevationPoint>) results.get("results");
+		  		
+		MetricsService.getInstance().getCurrentBikeJourney().setEvelvationProfile(evelvationProfile);
+
+		in.close();
+		 
+		MetricsService.getInstance().reset();
+		MetricsService.getInstance().start(eleReq.getJourneyName());
 		
 		return evelvationProfile;
 	}

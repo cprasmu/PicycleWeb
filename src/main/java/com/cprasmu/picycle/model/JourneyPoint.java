@@ -2,6 +2,7 @@ package com.cprasmu.picycle.model;
 
 
 public class JourneyPoint {
+	
 	private double altitude;
 	private double distance;
 	private long time;

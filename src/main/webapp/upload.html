@@ -1,0 +1,64 @@
+<html><head><title>PiCycle Virtual Journeys</title>
+<link rel="shortcut icon" href="favicon.ico">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" >
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" >
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=yes" />
+</head>
+<body onload="loadPage()">
+	<nav class="navbar navbar-inverse"><div class="container"><div class="navbar-header"><button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+	 <span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a class="navbar-brand" href="#">
+     <img alt="PiCycle" height=34 width=84 src="images/picycle2.png"></a></div>
+	 <div class="navbar-collapse collapse"><ul class="nav navbar-nav"></div><!--/.nav-collapse --></div></nav>
+	 <div class='panel-heading'><h1 class='panel-title'>Route</h1></div><div class='panel-body'>
+	 <div class="container"><form class="form-horizontal" role="form">
+	 <div class="form-group"><div class="input-group input-group-sm"><span class="input-group-addon" id="basic-addon1">From</span><input onFocus="geolocate()" id='fromText' type='text' class='form-control' placeholder='Eg. London, EX238RA ...' aria-describedby='basic-addon1'></div></div>
+	 <div class="form-group"><div class="input-group input-group-sm"><span class="input-group-addon" id="basic-addon2">To</span><input id='toText' type='text' class='form-control' placeholder='Eg. Bristol, PL272AA ...' aria-describedby='basic-addon2'></div></div>
+	 <div class="form-group"><button type="button" onClick='' class="btn btn-info btn btn-default btn-xs"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Reverse Addresses</button></div>
+	 <div class="form-group"><div class="input-group input-group-sm"><span class="input-group-addon" id="basic-addon3">Via</span><input id='viaText' type='text' class='form-control' placeholder='Eg. Plymouth ...' aria-describedby='basic-addon3'></div></div>
+	 <div class="form-group"><div class="input-group input-group-sm"><span class="input-group-addon" id="basic-addon4">Region</span><input id='regionText' type='text' class='form-control' placeholder='Eg. UK, USA' aria-describedby='basic-addon4'></div></div>
+	 <div class="form-group"><div class="input-group input-group-sm"><span class="input-group-addon" id="basic-addon4">Map Type</span>
+		
+	 <select class="form-control" id='mapTypeSelect'>
+		 <option value='0' selected>Road</option>
+		 <option value='1'>Satellite</option>
+		 <option value='2'>Hybrid</option>
+		 <option value='3'>Terrain</option>
+		 <option value='4'>Open Street Map</option>
+		 <option value='5'>Open Street Map MQ</option>
+		 <option value='6'>Open Topo Map</option>
+		 <option value='7'>Open Cycle Map</option>
+		 </select></div>
+	</div>
+	
+   <div class="form-group"><div class="input-group input-group-sm"><span class="input-group-addon" id="basic-addon4">Travel Mode</span>
+		 <select class="form-control" id='travelModeSelect' >
+		 <option value='0'>Driving</option>
+		 <option value='1'>Walking</option><option value='2'>Bicycle</option>
+		 </select></div>
+  </div>
+
+	 <div class="form-group"><div class="input-group input-group-sm">
+	 <span class="input-group-addon"><input id='avoidHighwaysBox' type="checkbox" aria-label="Avoid Highways"> Avoid Highways</span>
+	 <span class="input-group-addon"><input id='avoidTollsBox' type="checkbox" aria-label="Avoid Toll Roads"> Avoid Toll Roads</span>
+	 <span class="input-group-addon"><input id='draggableRouteBox' type="checkbox" aria-label="Draggable Route"> Draggable Route</span> </div></div>
+	 <div style="position:relative;">
+        <a class='btn btn-primary' href='javascript:;'>
+            Choose File...
+            <input type="file" style='position:absolute;z-index:2;top:0;left:0;filter: alpha(opacity=0);-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";opacity:0;background-color:transparent;color:transparent;' name="file_source" size="40"  onchange='$("#upload-file-info").html($(this).val());'>
+        </a>
+        &nbsp;
+        <span class='label label-info' id="upload-file-info"></span>
+</div>
+	 <input id='stepText' type='hidden'><input id='intervalText' type='hidden'>
+	 <div class="form-group"><div class="input-group"><span class="input-group-addon" id="basic-addon7">Zoom (1 - 20)</span><input id='zoomText' type='text' class='form-control' placeholder='Time in seconds' aria-describedby='basic-addon7'></div></div>
+	 <div class="form-group"><button type='button' value='Get Directions' class='btn btn-lg btn-success navbar-btn' onclick='parseDirForm()'></span><span class="glyphicon glyphicon-globe" aria-hidden="true"></span> Get Directions</button>
+	 &nbsp;<button type='button' value='Save Route' class='btn btn-lg btn-primary navbar-btn' onclick="dmap.saveRoute();"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save Route</button></div>
+	 </div></form></div>
+</body>
+</html>

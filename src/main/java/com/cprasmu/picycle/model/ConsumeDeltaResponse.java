@@ -2,7 +2,7 @@ package com.cprasmu.picycle.model;
 
 /**
  * DTO for resteasy response to consumeDelta
- * @author peterrasmussen
+ * @author PeterRasmussen
  *
  */
 public class ConsumeDeltaResponse {
